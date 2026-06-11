@@ -1,0 +1,73 @@
+<div class="flex min-h-screen w-auto bg-amber-300 items-center justify-center p-4">
+  <p-card>
+    <ng-template #header>
+      <div class="text-center mt-5">
+        <div class="inline-flex items-center justify-center w-16 h-16 mb-3">
+          <i class="pi pi-building text-primary text-5xl"></i>
+        </div>
+        <h1 class="text-surface-900 dark:text-surface-100 font-medium text-xl mt-0 mb-1">
+          Bienvenido
+        </h1>
+        <p class="text-surface-500 dark:surface-200 text-sm mt-0">
+          Ingresa tus credenciales para continuar
+        </p>
+      </div>
+    </ng-template>
+
+    <div>
+      <form [formGroup]="form" (ngSubmit)="iniciarSesion()">
+        <!-- Usuario -->
+        <div class="flex flex-col gap-2 mb-4">
+          <label class="text-surface-700 text-sm font-medium">Usuario</label>
+          <p-iconfield>
+            <p-inputicon class="pi pi-user" />
+            <input
+              pInputText
+              type="text"
+              formControlName="nombreUsuario"
+              placeholder="Nombre de usuario"
+              class="w-full"
+            />
+          </p-iconfield>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="flex flex-col gap-2 mb-5">
+          <label class="text-surface-700 text-sm font-medium">Contraseña</label>
+          <p-iconfield>
+            <p-inputicon class="pi pi-lock" />
+            <p-password
+              formControlName="password"
+              fluid
+              class="w-full"
+              placeholder="••••••••"
+              [toggleMask]="true"
+              autocomplete="off"
+            />
+          </p-iconfield>
+        </div>
+
+        <!-- Error -->
+        @if (errorMensaje()) {
+          <p-message severity="error" [text]="errorMensaje()!" styleClass="w-full mb-4" />
+        }
+
+        <!-- Botón -->
+        <p-button
+          label="Iniciar sesión"
+          icon="pi pi-sign-in"
+          type="submit"
+          [loading]="cargando()"
+          [disabled]="form.invalid"
+          styleClass="w-full"
+        />
+      </form>
+    </div>
+
+    <ng-template #footer>
+      <p class="text-center text-400 text-xs mt-4">
+        &copy; 2025 Tu Empresa S.A.C. — Todos los derechos reservados.
+      </p>
+    </ng-template>
+  </p-card>
+</div>

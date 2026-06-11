@@ -1,0 +1,243 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="flex items-center justify-between mb-5 mx-1">
+  <div>
+    <h2 class="dark:text-surface-0 text-surface-800 font-semibold text-2xl">Usuarios</h2>
+    <p class="dark:text-surface-100 text-surface-500 text-sm mt-0">
+      Gestión de usuarios del sistema
+    </p>
+  </div>
+
+  <div class="flex gap-2">
+    <p-button
+      label="Exportar"
+      size="small"
+      icon="pi pi-upload"
+      [outlined]="true"
+      severity="secondary"
+    />
+    <p-button label="Nuevo" size="small" icon="pi pi-plus" (onClick)="irACrear()" />
+  </div>
+</div>
+
+<p-card>
+  @if (errorMensaje()) {
+    <p-message severity="warn" styleClass="w-full mb-4">{{ errorMensaje() }}</p-message>
+  }
+
+  <p-dataview
+    #dv
+    [value]="usuarios()"
+    [layout]="layout"
+    [filterBy]="'nombre,email,rol'"
+    [paginator]="true"
+    [rows]="layout === 'list' ? 10 : 6"
+  >
+    <ng-template #header>
+      <div class="flex items-center justify-between mb-2">
+        <p-iconfield>
+          <p-inputicon class="pi pi-search" />
+          <input
+            pInputText
+            type="text"
+            class="w-90"
+            pSize="small"
+            [(ngModel)]="buscarGlobal"
+            (input)="dv.filter(buscarGlobal, 'contains')"
+            placeholder="Buscar por nombre, email o rol..."
+          />
+        </p-iconfield>
+
+        <div class="flex items-center gap-2">
+          <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
+            <ng-template #item let-option>
+              <i [class]="option === 'list' ? 'pi pi-bars' : 'pi pi-table'"></i>
+            </ng-template>
+          </p-selectbutton>
+
+          <p-button
+            severity="secondary"
+            size="small"
+            label="Filtros"
+            icon="pi pi-filter"
+            [outlined]="true"
+          />
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template #list let-items>
+      <p-table
+        [value]="items"
+        [loading]="cargando()"
+        [resizableColumns]="true"
+        class="p-datatable-sm"
+      >
+        <ng-template #header>
+          <tr>
+            <th class="w-16 text-center"></th>
+            <th pResizableColumn pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+            <th pResizableColumn pSortableColumn="nombreUsuario">
+              Usuario <p-sortIcon field="nombreUsuario" />
+            </th>
+            <th pResizableColumn pSortableColumn="email">Email <p-sortIcon field="email" /></th>
+            <th pResizableColumn pSortableColumn="rol">Rol <p-sortIcon field="rol" /></th>
+            <th class="text-center" style="width: 120px">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template #body let-usuario>
+          <tr>
+            <td class="text-center">
+              @if (!usuario.fotoPerfil) {
+                <p-avatar [label]="iniciales(usuario.nombre || '')" shape="circle" />
+              } @else {
+                <p-avatar [image]="obtenerRutaFoto(usuario.fotoPerfil)" shape="circle" />
+              }
+            </td>
+            <td>
+              <span class="font-medium">{{ usuario.nombre }}</span>
+            </td>
+            <td>
+              <span class="font-medium">{{ usuario.nombreUsuario }}</span>
+            </td>
+            <td class="font-medium">{{ usuario.email }}</td>
+            <td>
+              @if (usuario.nombreRol) {
+                <p-tag [value]="usuario.nombreRol" severity="info" />
+              } @else {
+                <span class="text-sm text-surface-400">Sin rol</span>
+              }
+            </td>
+            <td>
+              <div class="flex justify-center gap-1">
+                <p-button
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="info"
+                  pTooltip="Editar"
+                  (onClick)="irAEditar(usuario.id)"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  pTooltip="Eliminar"
+                  (onClick)="confirmarEliminar(usuario)"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center py-6">
+              <div class="flex flex-col items-center gap-2 text-surface-400">
+                <i class="pi pi-users text-4xl"></i>
+                <span>No se encontraron usuarios.</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </ng-template>
+
+    <ng-template #grid let-items>
+      <div class="grid grid-cols-12 gap-4 p-4">
+        @if (items.length === 0) {
+          <div class="flex flex-col col-span-12 text-center py-10 text-surface-400">
+            <i class="pi pi-users text-4xl block mb-2"></i>
+            <span>No se encontraron usuarios en la búsqueda.</span>
+          </div>
+        }
+
+        <div *ngFor="let usuario of items" class="col-span-12 md:col-span-6 xl:col-span-4">
+          <div
+            class="p-5 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded-xl flex flex-col justify-between relative shadow-sm h-full"
+          >
+            <div class="flex items-start gap-4 w-full min-w-0">
+              <div class="shrink-0">
+                @if (!usuario.fotoPerfil) {
+                  <p-avatar
+                    [label]="iniciales(usuario.nombre || '')"
+                    size="xlarge"
+                    shape="circle"
+                    class="w-16 h-16 text-lg"
+                  />
+                } @else {
+                  <p-avatar
+                    [image]="obtenerRutaFoto(usuario.fotoPerfil)"
+                    size="xlarge"
+                    shape="circle"
+                    class="w-16 h-16"
+                  />
+                }
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-2 w-full min-w-0 mb-1">
+                  <h3
+                    class="text-lg font-semibold text-surface-900 dark:text-surface-50 truncate m-0 flex-1"
+                    [pTooltip]="usuario.nombreRol"
+                    tooltipPosition="top"
+                  >
+                    {{ usuario.nombre }}
+                  </h3>
+
+                  @if (usuario.nombreRol) {
+                    <div class="shrink-0">
+                      <p-tag
+                        [value]="usuario.nombreRol"
+                        severity="info"
+                        class="text-xs px-2 py-0.5"
+                      />
+                    </div>
+                  }
+                </div>
+
+                <div class="text-sm text-surface-500 dark:text-surface-400 mb-2">
+                  @{{ usuario.nombreUsuario }}
+                </div>
+
+                <div
+                  class="text-xs text-surface-600 dark:text-surface-300 truncate font-medium flex items-center gap-1"
+                  [pTooltip]="usuario.email"
+                  tooltipPosition="bottom"
+                >
+                  <i class="pi pi-envelope text-xs text-surface-400"></i>
+                  {{ usuario.email }}
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="flex gap-2 w-full mt-5 pt-4 border-t border-surface-100 dark:border-surface-800"
+            >
+              <p-button
+                label="Editar"
+                icon="pi pi-pencil"
+                size="small"
+                [outlined]="true"
+                severity="info"
+                class="flex-1"
+                class="w-full"
+                (onClick)="irAEditar(usuario.id)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                size="small"
+                [outlined]="true"
+                severity="danger"
+                (onClick)="confirmarEliminar(usuario)"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </p-dataview>
+</p-card>

@@ -1,0 +1,36 @@
+<div class="p-4">
+  <p-card header="¡Bienvenido al Sistema de Control de Asistencias!" subheader="Panel de Pruebas Inicial" [style]="{ 'margin-bottom': '2rem' }">
+    <p class="m-0">
+      Si estás viendo esta pantalla, significa que el <strong>AuthGuard</strong> validó tu token correctamente,
+      el enrutador te redirigió con éxito y el componente <strong>Layout</strong> está funcionando. ¡Gran trabajo!
+    </p>
+  </p-card>
+
+  <div class="grid">
+    <div class="col-3 md:col-4 p-2">
+      <p-card header="Usuarios Activos" class="text-center">
+        <h1 class="text-primary text-5xl m-2">12</h1>
+        <small class="text-gray-500">Conectados al sistema</small>
+      </p-card>
+    </div>
+
+    <div class="col-3 md:col-4 p-2">
+      <p-card header="Asistencias de Hoy" class="text-center">
+        <h1 class="text-success text-5xl m-2">85%</h1>
+        <small class="text-gray-500">Puntualidad acumulada</small>
+      </p-card>
+    </div>
+
+    <div class="col-3 md:col-4 p-2">
+      <p-card header="Alertas / Tardanzas" class="text-center">
+        <h1 class="text-danger text-5xl m-2">2</h1>
+        <small class="text-gray-500">Incidentes sin revisar</small>
+      </p-card>
+    </div>
+  </div>
+
+  <div class="mt-4 flex gap-3">
+    <p-button label="Ir al CRUD de Usuarios" icon="pi pi-users" (onClick)="irAUsuarios()"></p-button>
+    <p-button label="Cerrar Sesión" icon="pi pi-power-off" severity="danger" [outlined]="true" (onClick)="logout()"></p-button>
+  </div>
+</div>

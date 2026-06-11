@@ -1,0 +1,206 @@
+<p-toast />
+
+<div class="flex items-center justify-between mb-6 mx-1">
+  <div class="flex items-center gap-2">
+    <p-button icon="pi pi-arrow-left"
+              [text]="true"
+              [rounded]="true"
+              (onClick)="volver()" />
+    <h2 class="dark:text-surface-0 text-surface-800 font-semibold text-2xl">
+      {{ esEdicion() ? 'Editar Usuario' : 'Nuevo Usuario' }}
+    </h2>
+  </div>
+</div>
+
+<p-card>
+  @if (cargando()) {
+    <div class="p-4 mb-4">
+      <p-skeleton height="2rem" width="15rem" class="mb-4" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><p-skeleton height="2.8rem" class="w-full" /></div>
+        <div><p-skeleton height="2.8rem" class="w-full" /></div>
+        <div><p-skeleton height="2.8rem" class="w-full" /></div>
+        <div><p-skeleton height="2.8rem" class="w-full" /></div>
+      </div>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="flex flex-col gap-6">
+
+      <!-- Foto de perfil -->
+      <div class="flex flex-col sm:flex-row items-center gap-5 p-4
+                  bg-surface-50 dark:bg-surface-800/40 rounded-xl
+                  border border-surface-100 dark:border-surface-800">
+
+        <!-- Avatar -->
+        <div class="relative">
+          @if (fotoPreview()) {
+            <img [src]="fotoPreview()"
+                 class="w-24 h-24 rounded-full object-cover
+                        border-2 border-primary"
+                 alt="Avatar" />
+            <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                severity="danger"
+                size="small"
+                (onClick)="limpiarFoto()"
+                class="absolute"/>
+          } @else {
+            <div class="w-24 h-24 rounded-full bg-surface-200 dark:bg-surface-700
+                        flex items-center justify-center text-surface-500
+                        border-2 border-dashed border-surface-300 dark:border-surface-600">
+              <i class="pi pi-user text-4xl"></i>
+            </div>
+          }
+        </div>
+
+        <!-- Upload -->
+        <div class="flex flex-col gap-2 text-center sm:text-left">
+          <span class="font-medium text-surface-900 dark:text-surface-50 text-sm">
+            Foto de Perfil
+          </span>
+          <span class="text-xs text-surface-500">
+            Formatos permitidos: JPG, PNG, WEBP — Máx. 2MB
+          </span>
+          <p-fileUpload
+              mode="basic"
+              chooseLabel="Elegir foto"
+              chooseIcon="pi pi-upload"
+              accept="image/jpeg,image/png,image/webp"
+              [maxFileSize]="2097152"
+              [auto]="false"
+              (onSelect)="onFotoSeleccionada($event)"
+              (onError)="onFotoError($event)" />
+        </div>
+      </div>
+
+      <!-- Campos del formulario -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div class="flex flex-col gap-2">
+          <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+            Nombre Completo <span class="text-red-500">*</span>
+          </label>
+          <input pInputText
+                 formControlName="nombre"
+                 placeholder="Por ejemplo, Juan Pérez"
+                 [invalid]="campoInvalido('nombre')" />
+          @if (campoInvalido('nombre')) {
+            <small class="text-red-500 flex items-center gap-1">
+              <i class="pi pi-exclamation-circle text-xs"></i>
+              El nombre es requerido.
+            </small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+            Nombre de Usuario <span class="text-red-500">*</span>
+          </label>
+          <input pInputText
+                 formControlName="nombreUsuario"
+                 placeholder="jperez"
+                 [invalid]="campoInvalido('nombreUsuario')" />
+          @if (campoInvalido('nombreUsuario')) {
+            <small class="text-red-500 flex items-center gap-1">
+              <i class="pi pi-exclamation-circle text-xs"></i>
+              Mínimo 6 caracteres.
+            </small>
+          }
+        </div>
+
+        @if (!esEdicion()) {
+          <div class="flex flex-col gap-2">
+            <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+              Contraseña <span class="text-red-500">*</span>
+            </label>
+            <p-password
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                class="w-full"
+                inputStyleClass="w-full"
+                placeholder="••••••••"
+                [invalid]="campoInvalido('password')" />
+            @if (campoInvalido('password')) {
+              <small class="text-red-500 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>
+                Mínimo 6 caracteres.
+              </small>
+            }
+          </div>
+        }
+
+        <div class="flex flex-col gap-2">
+          <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+            Email
+          </label>
+          <input pInputText
+                 formControlName="email"
+                 placeholder="correo@empresa.com"
+                 [invalid]="campoInvalido('email')" />
+          @if (campoInvalido('email')) {
+            <small class="text-red-500 flex items-center gap-1">
+              <i class="pi pi-exclamation-circle text-xs"></i>
+              Ingrese un correo válido.
+            </small>
+          }
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+            Teléfono
+          </label>
+          <input pInputText
+                 formControlName="telefono"
+                 placeholder="+51 987654321" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+            Rol de Usuario <span class="text-red-500">*</span>
+          </label>
+          <p-select
+              formControlName="rolId"
+              [options]="roles()"
+              optionLabel="nombre"
+              optionValue="id"
+              placeholder="Seleccione un rol"
+              class="w-full"
+              [invalid]="campoInvalido('rolId')" />
+          @if (campoInvalido('rolId')) {
+            <small class="text-red-500 flex items-center gap-1">
+              <i class="pi pi-exclamation-circle text-xs"></i>
+              Debe seleccionar un rol.
+            </small>
+          }
+        </div>
+
+      </div>
+
+      <!-- Error global -->
+      @if (errorMensaje()) {
+        <p-message severity="error" styleClass="w-full mt-2">
+          {{ errorMensaje()! }}
+        </p-message>
+      }
+
+      <!-- Acciones -->
+      <div class="flex justify-end gap-3 pt-4
+                  border-t border-surface-100 dark:border-surface-800">
+        <p-button label="Cancelar"
+                  [outlined]="true"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="volver()" />
+        <p-button [label]="esEdicion() ? 'Guardar Cambios' : 'Guardar Usuario'"
+                  size="small"
+                  icon="pi pi-save"
+                  type="submit"
+                  [loading]="guardando()"
+                  [disabled]="form.invalid" />
+      </div>
+
+    </form>
+  }
+</p-card>
