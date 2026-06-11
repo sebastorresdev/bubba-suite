@@ -4,12 +4,14 @@ import { CommonModule } from '@angular/common';
 import { Topbar } from './topbar';
 import { Sidebar } from './sidebar';
 import { LayoutService } from '../../core/services/layout.service';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, Topbar, Sidebar],
+  imports: [CommonModule, RouterOutlet, Topbar, Sidebar, ToastModule],
   template: `
+    <p-toast />
     <div class="h-screen w-screen bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-550 flex flex-col transition-colors duration-200 overflow-hidden">
 
   <app-topbar class="shrink-0" />

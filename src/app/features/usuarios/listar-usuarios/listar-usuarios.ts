@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -33,7 +33,7 @@ import { environment } from '../../../../environments/environment';
     ConfirmDialogModule, ToastModule, AvatarModule, MessageModule, CardModule,
     ToolbarModule, SelectButtonModule, DataViewModule
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   templateUrl: './listar-usuarios.html'
 })
 export class ListarUsuarios implements OnInit {
@@ -43,6 +43,9 @@ export class ListarUsuarios implements OnInit {
   private messageService = inject(MessageService);
 
   usuarios = signal<UsuarioResponse[]>([]);
+  totalUsuarios = computed(() => this.usuarios().length);
+  usuariosActivos = computed(() => this.usuarios().filter(u => u.activo).length);
+  usuariosInactivos = computed(() => this.usuarios().filter(u => !u.activo).length);
   cargando = signal(false);
   errorMensaje = signal<string | null>(null);
   buscarGlobal = '';
@@ -121,5 +124,9 @@ export class ListarUsuarios implements OnInit {
   obtenerRutaFoto(fotoUrl: string): string {
     if (!fotoUrl) return '';
     return `${environment.serverUrl}${fotoUrl}`;
+  }
+
+  obtenerEstadoSeverity(activo: boolean): 'success' | 'secondary' {
+    return activo ? 'success' : 'secondary';
   }
 }

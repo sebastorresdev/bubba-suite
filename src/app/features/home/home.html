@@ -1,36 +1,178 @@
-<div class="p-4">
-  <p-card header="¡Bienvenido al Sistema de Control de Asistencias!" subheader="Panel de Pruebas Inicial" [style]="{ 'margin-bottom': '2rem' }">
-    <p class="m-0">
-      Si estás viendo esta pantalla, significa que el <strong>AuthGuard</strong> validó tu token correctamente,
-      el enrutador te redirigió con éxito y el componente <strong>Layout</strong> está funcionando. ¡Gran trabajo!
-    </p>
-  </p-card>
-
-  <div class="grid">
-    <div class="col-3 md:col-4 p-2">
-      <p-card header="Usuarios Activos" class="text-center">
-        <h1 class="text-primary text-5xl m-2">12</h1>
-        <small class="text-gray-500">Conectados al sistema</small>
-      </p-card>
+<div class="space-y-6 p-4">
+  <!-- Tarjeta de Bienvenida -->
+  <div class="p-6 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in">
+    <div>
+      <h2 class="text-2xl font-bold text-surface-900 dark:text-surface-0 mb-1">¡Bienvenido al Sistema de Control de Asistencias!</h2>
+      <p class="text-sm text-surface-500 dark:text-surface-400 m-0">Panel de control en tiempo real para visualizar y gestionar las asistencias del personal.</p>
     </div>
-
-    <div class="col-3 md:col-4 p-2">
-      <p-card header="Asistencias de Hoy" class="text-center">
-        <h1 class="text-success text-5xl m-2">85%</h1>
-        <small class="text-gray-500">Puntualidad acumulada</small>
-      </p-card>
-    </div>
-
-    <div class="col-3 md:col-4 p-2">
-      <p-card header="Alertas / Tardanzas" class="text-center">
-        <h1 class="text-danger text-5xl m-2">2</h1>
-        <small class="text-gray-500">Incidentes sin revisar</small>
-      </p-card>
+    <div class="flex gap-2">
+      <p-button label="Cerrar Sesión" icon="pi pi-power-off" severity="danger" [outlined]="true" size="small" (onClick)="logout()"></p-button>
     </div>
   </div>
 
-  <div class="mt-4 flex gap-3">
-    <p-button label="Ir al CRUD de Usuarios" icon="pi pi-users" (onClick)="irAUsuarios()"></p-button>
-    <p-button label="Cerrar Sesión" icon="pi pi-power-off" severity="danger" [outlined]="true" (onClick)="logout()"></p-button>
+  @if (resumenHoy()) {
+    <!-- Grid de KPIs con Tailwind CSS v4 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- Total Empleados -->
+      <div class="p-5 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Total Personal</span>
+            <h3 class="text-3xl font-extrabold text-surface-800 dark:text-surface-100 mt-2 mb-0">{{ resumenHoy()?.totalEmpleados }}</h3>
+          </div>
+          <div class="p-3 bg-primary-50 dark:bg-primary-950/20 text-primary-600 dark:text-primary-400 rounded-xl">
+            <i class="pi pi-users text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center text-xs text-surface-500">
+          <i class="pi pi-circle-fill text-[8px] text-primary-500 mr-2 animate-pulse"></i>
+          <span>Registrados en planilla</span>
+        </div>
+      </div>
+
+      <!-- Activos Hoy (Presentes) -->
+      <div class="p-5 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Asistencias Hoy</span>
+            <h3 class="text-3xl font-extrabold text-green-600 dark:text-green-400 mt-2 mb-0">{{ resumenHoy()?.activosHoy }}</h3>
+          </div>
+          <div class="p-3 bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 rounded-xl">
+            <i class="pi pi-check-circle text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center text-xs text-surface-500">
+          <span class="text-green-500 font-semibold mr-1">
+            {{ ((resumenHoy()?.activosHoy || 0) / (resumenHoy()?.totalEmpleados || 1) * 100) | number:'1.0-0' }}%
+          </span>
+          <span>de asistencia general</span>
+        </div>
+      </div>
+
+      <!-- Tardanzas -->
+      <div class="p-5 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Tardanzas</span>
+            <h3 class="text-3xl font-extrabold text-orange-600 dark:text-orange-400 mt-2 mb-0">{{ resumenHoy()?.tardanzasHoy }}</h3>
+          </div>
+          <div class="p-3 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-xl">
+            <i class="pi pi-clock text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center text-xs text-surface-500">
+          <span>Requieren revisión o justificación</span>
+        </div>
+      </div>
+
+      <!-- Faltas -->
+      <div class="p-5 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Inasistencias</span>
+            <h3 class="text-3xl font-extrabold text-red-600 dark:text-red-400 mt-2 mb-0">{{ resumenHoy()?.faltasHoy }}</h3>
+          </div>
+          <div class="p-3 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl">
+            <i class="pi pi-times-circle text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center text-xs text-surface-500">
+          <span>Ausencias no justificadas hoy</span>
+        </div>
+      </div>
+    </div>
+  @}
+
+  <!-- Panel de Detalles de Asistencia (Dos columnas en desktop) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Tabla de Asistencias Recientes (Ocupa 2/3 columnas en desktop) -->
+    <div class="lg:col-span-2 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-surface-900 dark:text-surface-0 m-0">Registro Reciente de Asistencia</h3>
+            <p class="text-xs text-surface-500 dark:text-surface-400 m-0">Últimos movimientos del personal hoy</p>
+          </div>
+          <p-button label="Ver todos" [text]="true" size="small" icon="pi pi-external-link" (onClick)="irAUsuarios()"></p-button>
+        </div>
+
+        <p-table [value]="asistenciasRecientes()" class="p-datatable-sm w-full">
+          <ng-template #header>
+            <tr>
+              <th class="w-12">Colaborador</th>
+              <th>Puesto / Rol</th>
+              <th class="w-28 text-center">Hora Entrada</th>
+              <th class="w-24 text-center">Estado</th>
+              <th>Notas / Observaciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-asistencia>
+            <tr>
+              <td>
+                <div class="flex items-center gap-3">
+                  @if (asistencia.fotoEmpleado) {
+                    <p-avatar [image]="asistencia.fotoEmpleado" shape="circle" class="w-8 h-8 shrink-0" />
+                  } @else {
+                    <p-avatar [label]="iniciales(asistencia.nombreEmpleado)" shape="circle" class="w-8 h-8 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 text-xs shrink-0" />
+                  }
+                  <span class="font-medium text-sm text-surface-800 dark:text-surface-100 truncate max-w-44">{{ asistencia.nombreEmpleado }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="text-xs text-surface-500 dark:text-surface-400">{{ asistencia.rolEmpleado || 'General' }}</span>
+              </td>
+              <td class="text-center font-mono text-sm text-surface-700 dark:text-surface-300">
+                {{ asistencia.horaEntrada || '--:--:--' }}
+              </td>
+              <td class="text-center">
+                <p-tag [value]="asistencia.estado" [severity]="obtenerEstadoSeverity(asistencia.estado)" class="text-[10px] uppercase font-bold px-2 py-0.5" />
+              </td>
+              <td class="text-xs text-surface-500 max-w-48 truncate" [title]="asistencia.observaciones">
+                {{ asistencia.observaciones || '-' }}
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <!-- Panel de Puntualidad y Acciones Rápidas (Ocupa 1/3 columna) -->
+    <div class="flex flex-col gap-6">
+      
+      <!-- Widget de Puntualidad -->
+      <div class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm p-5 flex flex-col items-center justify-center text-center">
+        <h3 class="text-base font-bold text-surface-800 dark:text-surface-100 mb-4 self-start">Puntualidad del Día</h3>
+        
+        <!-- Indicador circular animado o barra de progreso estética -->
+        <div class="relative flex items-center justify-center w-36 h-36 mb-4">
+          <!-- Círculo SVG de fondo y progreso -->
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+            <circle class="text-surface-100 dark:text-surface-800" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+            <circle class="text-primary-500 transition-all duration-500 ease-in-out" stroke-width="8" stroke-dasharray="251.2" [attr.stroke-dashoffset]="251.2 - (251.2 * (resumenHoy()?.porcentajePuntualidad || 0)) / 100" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+          </svg>
+          <!-- Texto central -->
+          <div class="absolute flex flex-col items-center">
+            <span class="text-3xl font-extrabold text-surface-900 dark:text-surface-0">{{ resumenHoy()?.porcentajePuntualidad }}%</span>
+            <span class="text-[10px] text-surface-400 font-semibold uppercase tracking-wider">Puntualidad</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-surface-500 dark:text-surface-400 px-2 leading-relaxed">
+          La puntualidad diaria de hoy está en un nivel aceptable. Se registraron {{ resumenHoy()?.tardanzasHoy }} tardanzas en las horas pico de ingreso.
+        </p>
+      </div>
+
+      <!-- Acciones Rápidas del Sistema -->
+      <div class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl shadow-sm p-5">
+        <h3 class="text-base font-bold text-surface-800 dark:text-surface-100 mb-4">Módulos Administrativos</h3>
+        <div class="flex flex-col gap-3">
+          <p-button label="Gestión de Usuarios" icon="pi pi-users" class="w-full" (onClick)="irAUsuarios()"></p-button>
+          <p-button label="Reporte Completo de Asistencias" icon="pi pi-file" class="w-full" severity="secondary" [outlined]="true" (onClick)="irAUsuarios()"></p-button>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </div>

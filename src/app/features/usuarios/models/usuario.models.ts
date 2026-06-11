@@ -1,5 +1,3 @@
-import { RolResponse } from "../../roles/models/rol.models";
-
 export interface UsuarioResponse {
   id: string;
   nombre: string;
@@ -7,6 +5,7 @@ export interface UsuarioResponse {
   fotoPerfil: string | null;
   email: string | null;
   nombreRol: string;
+  activo: boolean;
 }
 
 export interface UsuarioDetalleResponse {
@@ -17,6 +16,7 @@ export interface UsuarioDetalleResponse {
   telefono: string | null;
   email: string | null;
   rolId: string;
+  activo: boolean;
 }
 
 export interface CrearUsuarioRequest {
@@ -27,6 +27,7 @@ export interface CrearUsuarioRequest {
   email: string | null;
   telefono: string | null;
   rolId: string;
+  activo: boolean;
 }
 
 export interface EditarUsuarioRequest {
@@ -37,4 +38,5 @@ export interface EditarUsuarioRequest {
   email: string | null;
   telefono: string | null;
   rolId: string;
+  activo: boolean;
 }

@@ -10,7 +10,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FileUploadModule } from 'primeng/fileupload';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { switchMap, of } from 'rxjs';
 import { UsuarioService } from '../services/usuario.service';
 import { RolService } from '../../roles/services/rol.service';
@@ -24,9 +25,9 @@ import { environment } from '../../../../environments/environment';
   imports: [
     CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule,
     PasswordModule, SelectModule, ToastModule, MessageModule,
-    SkeletonModule, FileUploadModule, CardModule
+    SkeletonModule, FileUploadModule, CardModule, ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [ConfirmationService],
   templateUrl: './upsert-usuario.html'
 })
 export class UpsertUsuario implements OnInit {
@@ -36,6 +37,7 @@ export class UpsertUsuario implements OnInit {
   private usuarioService = inject(UsuarioService);
   private rolService = inject(RolService);
   private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   fotoPreview = signal<string | null>(null);
   fotoArchivo = signal<File | null>(null);
@@ -55,8 +57,14 @@ export class UpsertUsuario implements OnInit {
     email: ['', Validators.email],
     telefono: [''],
     fotoPerfil: [null as string | null],
-    rolId: ['', Validators.required]
+    rolId: ['', Validators.required],
+    activo: [true, Validators.required]
   });
+
+  estadoOptions = [
+    { label: 'Activo', value: true },
+    { label: 'Inactivo', value: false }
+  ];
 
   ngOnInit() {
     this.rolService.obtenerTodos().subscribe({
@@ -71,13 +79,15 @@ export class UpsertUsuario implements OnInit {
 
       this.usuarioService.obtenerPorId(this.usuarioId!).subscribe({
         next: usuario => {
+          console.log(usuario);
           this.form.patchValue({
             nombre: usuario.nombre,
             nombreUsuario: usuario.nombreUsuario,
             email: usuario.email,
             telefono: usuario.telefono,
             fotoPerfil: usuario.fotoPerfil,
-            rolId: usuario.rolId
+            rolId: usuario.rolId,
+            activo: usuario.activo ?? true
           });
 
           if (usuario.fotoPerfil) {
@@ -105,7 +115,7 @@ export class UpsertUsuario implements OnInit {
   private procesarFotoYGuardar() {
     if (!this.fotoArchivo()) {
       this.ejecutarGuardado().subscribe({
-        next: () => this.onExito(),
+        next: (res: any) => this.onExito(res),
         error: (err) => this.onError(err)
       });
       return;
@@ -120,7 +130,7 @@ export class UpsertUsuario implements OnInit {
         return this.ejecutarGuardado();
       })
     ).subscribe({
-      next: () => this.onExito(),
+      next: (res: any) => this.onExito(res),
       error: (err) => this.onError(err)
     });
   }
@@ -140,19 +150,29 @@ export class UpsertUsuario implements OnInit {
       email: v.email?.trim() || null,
       telefono: v.telefono?.trim() || null,
       fotoPerfil: v.fotoPerfil || null,
-      rolId: v.rolId
+      rolId: v.rolId,
+      activo: v.activo ?? true
     };
     if (!this.esEdicion()) base.password = v.password;
     return base;
   }
 
-  private onExito() {
+  private onExito(res?: any) {
     this.messageService.add({
       severity: 'success',
       summary: 'Éxito',
       detail: this.esEdicion() ? 'Usuario actualizado.' : 'Usuario creado.'
     });
-    setTimeout(() => this.router.navigate(['/usuarios']), 1500);
+    if (this.esEdicion()) {
+      this.guardando.set(false);
+    } else {
+      const id = res?.id;
+      if (id) {
+        this.router.navigate(['/usuarios/editar', id]);
+      } else {
+        this.router.navigate(['/usuarios']);
+      }
+    }
   }
 
   private onError(err: any) {
@@ -194,5 +214,43 @@ export class UpsertUsuario implements OnInit {
 
   volver() {
     this.router.navigate(['/usuarios']);
+  }
+
+  irACrearNuevo() {
+    this.router.navigate(['/usuarios/nuevo']);
+  }
+
+  confirmarEliminar() {
+    this.confirmationService.confirm({
+      message: `¿Está seguro de eliminar a este usuario? Esta acción no se puede deshacer.`,
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => this.eliminar()
+    });
+  }
+
+  eliminar() {
+    this.guardando.set(true);
+    this.usuarioService.eliminar(this.usuarioId!).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario eliminado.' });
+        setTimeout(() => this.router.navigate(['/usuarios']), 1000);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el usuario.' });
+        this.guardando.set(false);
+      }
+    });
+  }
+
+  confirmarVincularEmpleado() {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Vincular Empleado',
+      detail: 'Módulo de vinculación en desarrollo para conectarse con la base de datos de planillas.'
+    });
   }
 }

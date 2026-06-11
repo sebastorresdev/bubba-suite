@@ -52,7 +52,7 @@ export const routes: Routes = [
             // }
             {
                 path: '404',
-                loadComponent: () => import('./shared/no-found/not-found').then(m => m.NotFound)
+                loadComponent: () => import('./shared/not-found/not-found').then(m => m.NotFound)
             },
 
             // Si la ruta no existe PERO el usuario ya cruzó el authGuard, lo mandamos al 404 interno
