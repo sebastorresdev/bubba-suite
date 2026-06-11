@@ -27,8 +27,12 @@ export const routes: Routes = [
             },
             {
                 path: 'usuarios/nuevo',
-                loadComponent: () => import('./features/usuarios/add-editar-usuario/upsert-usuario').then(m => m.UpsertUsuario) },
-            { path: 'usuarios/editar/:id',  loadComponent: () => import('./features/usuarios/add-editar-usuario/upsert-usuario').then(m => m.UpsertUsuario) },
+                loadComponent: () => import('./features/usuarios/crear-editar-usuario/crear-editar-usuario').then(m => m.CrearEditarUsuario)
+            },
+            {
+                path: 'usuarios/editar/:id',
+                loadComponent: () => import('./features/usuarios/crear-editar-usuario/crear-editar-usuario').then(m => m.CrearEditarUsuario)
+            },
             // {
             //     path: 'usuarios/crear',
             //     loadComponent: () => import('./features/usuarios/crear-usuario/crear-usuario')

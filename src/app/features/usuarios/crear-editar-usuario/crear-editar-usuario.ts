@@ -20,7 +20,7 @@ import { CardModule } from 'primeng/card';
 import { environment } from '../../../../environments/environment';
 
 @Component({
-  selector: 'app-upsert-usuario',
+  selector: 'app-crear-editar-usuario',
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule,
@@ -28,9 +28,9 @@ import { environment } from '../../../../environments/environment';
     SkeletonModule, FileUploadModule, CardModule, ConfirmDialogModule
   ],
   providers: [ConfirmationService],
-  templateUrl: './upsert-usuario.html'
+  templateUrl: './crear-editar-usuario.html'
 })
-export class UpsertUsuario implements OnInit {
+export class CrearEditarUsuario implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);

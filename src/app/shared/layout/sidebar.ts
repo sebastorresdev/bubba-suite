@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 interface SubMenuItem {
   label: string;
@@ -51,18 +52,20 @@ interface MenuGroup {
                   <a (click)="toggleSubMenu(item.label)"
                      class="flex items-center gap-3 px-4 py-3 text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800/60 rounded-lg transition-all duration-150 group text-base cursor-pointer">
                     <i [class]="item.icon + ' text-lg text-surface-400 group-hover:text-primary-500 transition-colors'"
-                       [class.text-primary-500]="activeSubMenu() === item.label"></i>
+                       [class.text-primary-500]="activeSubMenu() === item.label || hasActiveChild(item)"></i>
                     <span class="flex-1 transition-colors"
-                          [class.text-primary-600]="activeSubMenu() === item.label"
-                          [class.font-semibold]="activeSubMenu() === item.label">
+                          [class.text-primary-600]="activeSubMenu() === item.label || hasActiveChild(item)"
+                          [class.font-semibold]="activeSubMenu() === item.label || hasActiveChild(item)">
                       {{ item.label }}
                     </span>
                     <i class="pi pi-chevron-down text-xs text-surface-400 transition-transform duration-200"
                        [class.rotate-180]="activeSubMenu() === item.label"></i>
                   </a>
 
-                  @if (activeSubMenu() === item.label) {
-                    <div class="pl-3 mt-1 space-y-1 border-l border-surface-200 dark:border-surface-800 ml-6">
+                  <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                       [style.max-height]="activeSubMenu() === item.label ? '200px' : '0px'"
+                       [style.opacity]="activeSubMenu() === item.label ? '1' : '0'">
+                    <div class="pl-3 mt-1 space-y-1 border-l border-surface-200 dark:border-surface-800 ml-6 pb-1">
                       @for (sub of item.subItems; track sub.label) {
                         <a [routerLink]="sub.routerLink"
                            [routerLinkActiveOptions]="{ exact: true }"
@@ -77,7 +80,7 @@ interface MenuGroup {
                         </a>
                       }
                     </div>
-                  }
+                  </div>
                 </div>
               }
 
@@ -88,8 +91,45 @@ interface MenuGroup {
     </div>
   `
 })
-export class Sidebar {
+export class Sidebar implements OnInit {
   activeSubMenu = signal<string | null>(null);
+  private router = inject(Router);
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.autoExpandActiveSubmenu();
+    });
+    // Autoexpandir en carga inicial
+    this.autoExpandActiveSubmenu();
+  }
+
+  private autoExpandActiveSubmenu() {
+    const currentUrl = this.router.url;
+    for (const group of this.menuConfig) {
+      for (const item of group.items) {
+        if (item.subItems) {
+          const hasActiveChild = item.subItems.some(sub => 
+            currentUrl === sub.routerLink || currentUrl.startsWith(sub.routerLink + '/')
+          );
+          if (hasActiveChild) {
+            this.activeSubMenu.set(item.label);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  isRouteActive(route: string): boolean {
+    return this.router.url === route || this.router.url.startsWith(route + '/');
+  }
+
+  hasActiveChild(item: any): boolean {
+    if (!item.subItems) return false;
+    return item.subItems.some((sub: any) => this.isRouteActive(sub.routerLink));
+  }
 
   // Array robusto con todos tus módulos de prueba completos, limpio de badges
   menuConfig: MenuGroup[] = [
