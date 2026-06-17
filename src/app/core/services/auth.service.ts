@@ -13,7 +13,7 @@ export class AuthService {
   token = signal<string | null>(localStorage.getItem('token'));
   isAuthenticated = computed(() => !!this.token());
 
-  nombreUsuario = computed(() => {
+  username = computed(() => {
     const t = this.token();
     if (!t) return 'Usuario';
     try {
@@ -21,16 +21,16 @@ export class AuthService {
       if (parts.length < 2) return 'Usuario';
       const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
       const payload = JSON.parse(atob(base64));
-      return payload.unique_name || payload.sub || payload.nombreUsuario || 'Usuario';
+      return payload.unique_name || payload.sub || payload.username || 'Usuario';
     } catch {
       return 'Usuario';
     }
   });
 
-  login(nombreUsuario: string, password: string) {
+  login(username: string, password: string) {
     return this.http.post<{ token: string }>(
       `${environment.apiUrl}/auth/login`,
-      { nombreUsuario, password }
+      { username, password }
     ).pipe(
       tap(response => {
         this.token.set(response.token);

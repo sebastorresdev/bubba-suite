@@ -24,13 +24,13 @@
       </ng-template>
 
       <div class="px-2">
-        <form [formGroup]="form" (ngSubmit)="iniciarSesion()" class="flex flex-col gap-4">
+        <form [formGroup]="form" (ngSubmit)="login()" class="flex flex-col gap-4">
           <!-- Usuario -->
           <div class="flex flex-col gap-1.5">
             <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">Nombre de Usuario</label>
             <p-iconfield>
               <p-inputicon class="pi pi-user text-surface-400" />
-              <input pInputText type="text" formControlName="nombreUsuario" placeholder="Ingresa tu usuario"
+              <input pInputText type="text" formControlName="username" placeholder="Ingresa tu usuario"
                 class="w-full text-base" pSize="small" />
             </p-iconfield>
           </div>
@@ -46,15 +46,15 @@
           </div>
 
           <!-- Error -->
-          @if (errorMensaje()) {
+          @if (errorMessage()) {
           <p-message severity="error" styleClass="w-full mt-2">
-            {{ errorMensaje()! }}
+            {{ errorMessage()! }}
           </p-message>
           }
 
           <!-- Botón -->
           <div class="mt-4">
-            <p-button label="Iniciar sesión" icon="pi pi-sign-in" type="submit" [loading]="cargando()"
+            <p-button label="Iniciar sesión" icon="pi pi-sign-in" type="submit" [loading]="loading()"
               [disabled]="form.invalid"
               styleClass="w-full py-2.5 font-semibold text-base transition-transform active:scale-[0.98]" />
           </div>

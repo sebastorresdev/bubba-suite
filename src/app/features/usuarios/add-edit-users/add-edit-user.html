@@ -5,55 +5,76 @@
     <p-button icon="pi pi-arrow-left"
               [text]="true"
               [rounded]="true"
-              (onClick)="volver()"
+              (onClick)="goBack()"
               class="shrink-0" />
     <div>
       <h2 class="dark:text-surface-0 text-surface-800 font-extrabold text-2xl m-0 leading-tight">
-        {{ esEdicion() ? 'Editar Usuario' : 'Nuevo Usuario' }}
+        {{ isEditing() ? 'Edit User' : 'New User' }}
       </h2>
       <p class="dark:text-surface-400 text-surface-500 text-sm mt-1 mb-0 leading-normal">
-        {{ esEdicion() ? 'Modificar la información y privilegios de la cuenta del usuario.' : 'Registrar una nueva credencial de usuario en la plataforma.' }}
+        {{ isEditing() ? 'Modify user account information and privileges.' : 'Register a new user credential on the platform.' }}
       </p>
     </div>
   </div>
 
-  @if (esEdicion()) {
+  @if (isEditing()) {
     <div class="flex flex-wrap items-center gap-2">
       <!-- Vincular Empleado -->
       <p-button
-        label="Vincular Empleado"
+        label="Link Employee"
         icon="pi pi-link"
         [outlined]="true"
         severity="secondary"
         size="small"
-        (onClick)="confirmarVincularEmpleado()"
+        (onClick)="confirmLinkEmployee()"
       />
+
+      <!-- Cambiar Estado -->
+      @if (isActive()) {
+        <p-button
+          label="Deactivate"
+          icon="pi pi-ban"
+          [outlined]="true"
+          severity="warn"
+          size="small"
+          (onClick)="toggleStatus(false)"
+        />
+      } @else {
+        <p-button
+          label="Reactivate"
+          icon="pi pi-check-circle"
+          [outlined]="true"
+          severity="success"
+          size="small"
+          (onClick)="toggleStatus(true)"
+        />
+      }
 
       <!-- Eliminar Usuario -->
       <p-button
-        label="Eliminar"
+        label="Delete"
         icon="pi pi-trash"
         [outlined]="true"
         severity="danger"
         size="small"
-        (onClick)="confirmarEliminar()"
+        (onClick)="confirmDelete()"
       />
 
-      <span class="w-[1px] h-6 bg-surface-200 dark:bg-surface-800 hidden sm:block mx-1"></span>
+      <span class="w-px h-6 bg-surface-200 dark:bg-surface-800 hidden sm:block mx-1"></span>
 
       <!-- Crear Nuevo -->
       <p-button
-        label="Crear Nuevo"
+        label="Create New"
         icon="pi pi-plus"
         size="small"
-        (onClick)="irACrearNuevo()"
+        (onClick)="goToCreateNew()"
       />
     </div>
   }
 </div>
 
 <p-card>
-  @if (cargando()) {
+  @if (loading()) {
     <div class="p-4 mb-4">
       <p-skeleton height="2rem" width="15rem" class="mb-4" />
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -64,26 +85,26 @@
       </div>
     </div>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="guardar()" class="flex flex-col gap-6">
+    <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         <!-- COLUMNA IZQUIERDA: Perfil y Estado (1/3) -->
         <div class="lg:col-span-1 flex flex-col gap-6">
-          
+
           <!-- Foto de perfil -->
           <div class="flex flex-col items-center text-center p-6
                       bg-surface-50 dark:bg-surface-800/40 rounded-xl
                       border border-surface-100 dark:border-surface-800 gap-4">
-            
+
             <span class="font-bold text-surface-800 dark:text-surface-200 text-sm self-start">
-              Foto de Perfil
+              Profile Picture
             </span>
-            
+
             <!-- Avatar -->
             <div class="relative">
-              @if (fotoPreview()) {
-                <img [src]="fotoPreview()"
+              @if (photoPreview()) {
+                <img [src]="photoPreview()"
                      class="w-28 h-28 rounded-full object-cover
                             border-2 border-primary"
                      alt="Avatar" />
@@ -92,7 +113,7 @@
                     [rounded]="true"
                     severity="danger"
                     size="small"
-                    (onClick)="limpiarFoto()"
+                    (onClick)="clearPhoto()"
                     class="absolute -bottom-1 -right-1"/>
               } @else {
                 <div class="w-28 h-28 rounded-full bg-surface-200 dark:bg-surface-700
@@ -106,37 +127,18 @@
             <!-- Upload -->
             <div class="flex flex-col gap-2">
               <span class="text-xs text-surface-500">
-                Formatos permitidos: JPG, PNG, WEBP — Máx. 2MB
+                Allowed formats: JPG, PNG, WEBP — Max 2MB
               </span>
               <p-fileUpload
                   mode="basic"
-                  chooseLabel="Elegir foto"
+                  chooseLabel="Choose photo"
                   chooseIcon="pi pi-upload"
                   accept="image/jpeg,image/png,image/webp"
                   [maxFileSize]="2097152"
                   [auto]="false"
-                  (onSelect)="onFotoSeleccionada($event)"
-                  (onError)="onFotoError($event)" />
+                  (onSelect)="onPhotoSelected($event)"
+                  (onError)="onPhotoError($event)" />
             </div>
-          </div>
-
-          <!-- Estado de la cuenta -->
-          <div class="flex flex-col p-5
-                      bg-surface-50 dark:bg-surface-800/40 rounded-xl
-                      border border-surface-100 dark:border-surface-800 gap-3">
-            <label class="text-surface-800 dark:text-surface-200 text-sm font-bold">
-              Estado de la Cuenta <span class="text-red-500">*</span>
-            </label>
-            <p-select
-                formControlName="activo"
-                [options]="estadoOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Seleccione un estado"
-                class="w-full" />
-            <p class="text-xs text-surface-500 leading-normal m-0">
-              Inactivo bloquea inmediatamente el acceso a la plataforma sin eliminar el registro del usuario.
-            </p>
           </div>
 
 
@@ -146,49 +148,49 @@
         <!-- COLUMNA DERECHA: Campos de Formulario Principales (2/3) -->
         <div class="lg:col-span-2 p-6 bg-surface-0 dark:bg-surface-900
                     border border-surface-200 dark:border-surface-800 rounded-xl flex flex-col gap-5">
-          
+
           <h3 class="text-base font-bold text-surface-800 dark:text-surface-200 border-b border-surface-100 dark:border-surface-800 pb-2.5 m-0">
-            Datos Personales y Credenciales
+            Personal Data and Credentials
           </h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
             <div class="flex flex-col gap-2">
               <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Nombre Completo <span class="text-red-500">*</span>
+                Full Name <span class="text-red-500">*</span>
               </label>
               <input pInputText
-                     formControlName="nombre"
-                     placeholder="Por ejemplo, Juan Pérez"
-                     [invalid]="campoInvalido('nombre')" />
-              @if (campoInvalido('nombre')) {
+                     formControlName="name"
+                     placeholder="For example, John Doe"
+                     [invalid]="isFieldInvalid('name')" />
+              @if (isFieldInvalid('name')) {
                 <small class="text-red-500 flex items-center gap-1">
                   <i class="pi pi-exclamation-circle text-xs"></i>
-                  El nombre es requerido.
+                  The name is required.
                 </small>
               }
             </div>
 
             <div class="flex flex-col gap-2">
               <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Nombre de Usuario <span class="text-red-500">*</span>
+                Username <span class="text-red-500">*</span>
               </label>
               <input pInputText
-                     formControlName="nombreUsuario"
-                     placeholder="jperez"
-                     [invalid]="campoInvalido('nombreUsuario')" />
-              @if (campoInvalido('nombreUsuario')) {
+                     formControlName="username"
+                     placeholder="johndoe"
+                     [invalid]="isFieldInvalid('username')" />
+              @if (isFieldInvalid('username')) {
                 <small class="text-red-500 flex items-center gap-1">
                   <i class="pi pi-exclamation-circle text-xs"></i>
-                  Mínimo 6 caracteres.
+                  Minimum 6 characters.
                 </small>
               }
             </div>
 
-            @if (!esEdicion()) {
+            @if (!isEditing()) {
               <div class="flex flex-col gap-2">
                 <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                  Contraseña <span class="text-red-500">*</span>
+                  Password <span class="text-red-500">*</span>
                 </label>
                 <p-password
                     formControlName="password"
@@ -197,11 +199,11 @@
                     class="w-full"
                     inputStyleClass="w-full"
                     placeholder="••••••••"
-                    [invalid]="campoInvalido('password')" />
-                @if (campoInvalido('password')) {
+                    [invalid]="isFieldInvalid('password')" />
+                @if (isFieldInvalid('password')) {
                   <small class="text-red-500 flex items-center gap-1">
                     <i class="pi pi-exclamation-circle text-xs"></i>
-                    Mínimo 6 caracteres.
+                    Minimum 6 characters.
                   </small>
                 }
               </div>
@@ -214,40 +216,40 @@
               <input pInputText
                      formControlName="email"
                      placeholder="correo@empresa.com"
-                     [invalid]="campoInvalido('email')" />
-              @if (campoInvalido('email')) {
+                     [invalid]="isFieldInvalid('email')" />
+              @if (isFieldInvalid('email')) {
                 <small class="text-red-500 flex items-center gap-1">
                   <i class="pi pi-exclamation-circle text-xs"></i>
-                  Ingrese un correo válido.
+                  Enter a valid email.
                 </small>
               }
             </div>
 
             <div class="flex flex-col gap-2">
               <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Teléfono
+                Phone
               </label>
               <input pInputText
-                     formControlName="telefono"
-                     placeholder="+51 987654321" />
+                     formControlName="phoneNumber"
+                     placeholder="+1 234 567 890" />
             </div>
 
             <div class="flex flex-col gap-2">
               <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Rol de Usuario <span class="text-red-500">*</span>
+                User Role <span class="text-red-500">*</span>
               </label>
               <p-select
-                  formControlName="rolId"
+                  formControlName="roleId"
                   [options]="roles()"
-                  optionLabel="nombre"
+                  optionLabel="name"
                   optionValue="id"
-                  placeholder="Seleccione un rol"
+                  placeholder="Select a role"
                   class="w-full"
-                  [invalid]="campoInvalido('rolId')" />
-              @if (campoInvalido('rolId')) {
+                  [invalid]="isFieldInvalid('roleId')" />
+              @if (isFieldInvalid('roleId')) {
                 <small class="text-red-500 flex items-center gap-1">
                   <i class="pi pi-exclamation-circle text-xs"></i>
-                  Debe seleccionar un rol.
+                  You must select a role.
                 </small>
               }
             </div>
@@ -255,9 +257,9 @@
           </div>
 
           <!-- Error global -->
-          @if (errorMensaje()) {
+          @if (errorMessage()) {
             <p-message severity="error" styleClass="w-full mt-2">
-              {{ errorMensaje()! }}
+              {{ errorMessage()! }}
             </p-message>
           }
 
@@ -268,16 +270,16 @@
       <!-- Acciones -->
       <div class="flex justify-end gap-3 pt-4
                   border-t border-surface-100 dark:border-surface-800">
-        <p-button label="Cancelar"
+        <p-button label="Cancel"
                   [outlined]="true"
                   severity="secondary"
                   size="small"
-                  (onClick)="volver()" />
-        <p-button [label]="esEdicion() ? 'Guardar Cambios' : 'Guardar Usuario'"
+                  (onClick)="goBack()" />
+        <p-button [label]="isEditing() ? 'Save Changes' : 'Save User'"
                   size="small"
                   icon="pi pi-save"
                   type="submit"
-                  [loading]="guardando()"
+                  [loading]="saving()"
                   [disabled]="form.invalid" />
       </div>
 

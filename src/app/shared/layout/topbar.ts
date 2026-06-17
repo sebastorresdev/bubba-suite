@@ -37,14 +37,14 @@ import { AuthService } from '../../core/services/auth.service';
           alt="Bubba Bags"
           class="h-8 w-auto object-contain transition-all duration-300 dark:invert"/>
         </ng-template>
-        
+
         <ng-template #center>
           <p-iconfield iconPosition="left">
             <p-inputicon class="pi pi-search text-surface-400" />
             <input type="text" pInputText placeholder="Search..." />
           </p-iconfield>
         </ng-template>
-        
+
         <ng-template #end>
           <div class="flex items-center gap-2">
             <!-- Botón de Tema (Sol/Luna) -->
@@ -68,7 +68,7 @@ import { AuthService } from '../../core/services/auth.service';
               [outlined]="true"
             />
 
-            <span class="w-[1px] h-6 bg-surface-200 dark:bg-surface-800 mx-2"></span>
+            <span class="w-px h-6 bg-surface-200 dark:bg-surface-800 mx-2"></span>
 
             <!-- Perfil del usuario con dropdown -->
             <p-button
@@ -87,12 +87,12 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Topbar implements OnInit {
   userMenuItems: MenuItem[] | undefined;
-  
+
   _themeService = inject(ThemeService);
   _layoutService = inject(LayoutService);
   _authService = inject(AuthService);
 
-  nombreUsuario = this._authService.nombreUsuario;
+  nombreUsuario = this._authService.username;
 
   ngOnInit() {
     this.userMenuItems = [

@@ -22,16 +22,16 @@ export const routes: Routes = [
             },
             {
                 path: 'usuarios',
-                loadComponent: () => import('./features/usuarios/listar-usuarios/listar-usuarios')
-                    .then(m => m.ListarUsuarios)
+                loadComponent: () => import('./features/usuarios/user-lists/user-list')
+                    .then(m => m.UserList)
             },
             {
                 path: 'usuarios/nuevo',
-                loadComponent: () => import('./features/usuarios/crear-editar-usuario/crear-editar-usuario').then(m => m.CrearEditarUsuario)
+                loadComponent: () => import('./features/usuarios/add-edit-users/add-edit-user').then(m => m.AddEditUser)
             },
             {
                 path: 'usuarios/editar/:id',
-                loadComponent: () => import('./features/usuarios/crear-editar-usuario/crear-editar-usuario').then(m => m.CrearEditarUsuario)
+                loadComponent: () => import('./features/usuarios/add-edit-users/add-edit-user').then(m => m.AddEditUser)
             },
             // {
             //     path: 'usuarios/crear',

@@ -13,13 +13,13 @@ export class NotFound {
   private router = inject(Router);
   private location = inject(Location);
 
-  irAlHome() {
-    // Redirige al Dashboard de pruebas que acabamos de crear
+  goToHome() {
+    // Redirects to the home page
     this.router.navigate(['/home']);
   }
 
-  volverAtras() {
-    // Regresa a la página anterior en el historial del navegador
+  goBack() {
+    // Returns to the previous page in the browser history
     this.location.back();
   }
 }

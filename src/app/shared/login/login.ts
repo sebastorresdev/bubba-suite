@@ -24,23 +24,23 @@ export class Login {
   private router = inject(Router);
   private authService = inject(AuthService);
 
-  cargando = signal(false);
-  errorMensaje = signal<string | null>(null);
+  loading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   form = this.fb.group({
-    nombreUsuario: ['', Validators.required],
+    username: ['', Validators.required],
     password: ['', Validators.required]
   });
 
-  iniciarSesion() {
+  login() {
     if (this.form.invalid) return;
-    this.cargando.set(true);
-    this.errorMensaje.set(null);
+    this.loading.set(true);
+    this.errorMessage.set(null);
 
-    const { nombreUsuario, password } = this.form.getRawValue();
-    console.log(`nombre de usuario ${nombreUsuario} y contraseña ${password}`)
+    const { username, password } = this.form.getRawValue();
+    console.log(`username ${username} and password ${password}`)
 
-    this.authService.login(nombreUsuario!, password!).subscribe({
+    this.authService.login(username!, password!).subscribe({
       next: (response) =>
       {
         console.log(response)
@@ -49,12 +49,12 @@ export class Login {
 
       error: (err) => {
         console.log(err);
-        this.errorMensaje.set(
+        this.errorMessage.set(
           err.status === 401
-            ? 'Usuario o contraseña incorrectos.'
-            : 'Error al conectar con el servidor.'
+            ? 'Incorrect username or password.'
+            : 'Error connecting to the server.'
         );
-        this.cargando.set(false);
+        this.loading.set(false);
       }
     });
   }
