@@ -110,7 +110,7 @@ export class Sidebar implements OnInit {
     for (const group of this.menuConfig) {
       for (const item of group.items) {
         if (item.subItems) {
-          const hasActiveChild = item.subItems.some(sub => 
+          const hasActiveChild = item.subItems.some(sub =>
             currentUrl === sub.routerLink || currentUrl.startsWith(sub.routerLink + '/')
           );
           if (hasActiveChild) {
@@ -138,37 +138,6 @@ export class Sidebar implements OnInit {
       items: [
         { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/home' },
         { label: 'Indicadores KPI', icon: 'pi pi-chart-bar', routerLink: '/kpis' }
-      ]
-    },
-    {
-      title: 'Operaciones',
-      items: [
-        { label: 'Órdenes de Trabajo', icon: 'pi pi-file-edit', routerLink: '/ordenes' },
-        {
-          label: 'Mantenimiento',
-          icon: 'pi pi-cog',
-          subItems: [
-            { label: 'Correctivos', routerLink: '/mantenimiento/correctivos' },
-            { label: 'Preventivos', routerLink: '/mantenimiento/preventivos' },
-            { label: 'Calendario Anual', routerLink: '/mantenimiento/calendario' }
-          ]
-        },
-        { label: 'Hojas de Ruta', icon: 'pi pi-map-marker', routerLink: '/rutas' }
-      ]
-    },
-    {
-      title: 'Inventario',
-      items: [
-        { label: 'Stock de Repuestos', icon: 'pi pi-box', routerLink: '/inventario/repuestos' },
-        {
-          label: 'Proveedores',
-          icon: 'pi pi-truck',
-          subItems: [
-            { label: 'Listado Oficial', routerLink: '/proveedores' },
-            { label: 'Evaluación de Servicio', routerLink: '/proveedores/evaluacion' }
-          ]
-        },
-        { label: 'Compras y Órdenes', icon: 'pi pi-shopping-cart', routerLink: '/compras' }
       ]
     },
     {

@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,6 +12,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
 import { switchMap, of } from 'rxjs';
 import { UserService } from '../services/user.service';
 import { RoleService } from '../../roles/services/role.service';
@@ -24,9 +25,9 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-add-edit-user',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule,
+    CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule,
     PasswordModule, SelectModule, ToastModule, MessageModule,
-    SkeletonModule, FileUploadModule, CardModule, ConfirmDialogModule
+    SkeletonModule, FileUploadModule, CardModule, ConfirmDialogModule, DialogModule
   ],
   providers: [ConfirmationService],
   templateUrl: './add-edit-user.html'
@@ -42,6 +43,10 @@ export class AddEditUser implements OnInit {
 
   photoPreview = signal<string | null>(null);
   photoFile = signal<File | null>(null);
+
+  displaySedeDialog = false;
+  selectedBranch: any = null;
+  availableBranches = signal<any[]>([]);
 
   userId = this.route.snapshot.paramMap.get('id');
   isEditing = computed(() => !!this.userId);
@@ -280,11 +285,25 @@ export class AddEditUser implements OnInit {
     });
   }
 
-  confirmLinkEmployee() {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Link Employee',
-      detail: 'Linking module in development to connect with the payroll database.'
-    });
+  showSedeDialog() {
+    this.loadAvailableBranches();
+    this.displaySedeDialog = true;
+  }
+
+  loadAvailableBranches() {
+    // TODO: Llamar al servicio para traer SOLO sedes sin vincular
+    this.availableBranches.set([
+      { id: 1, nombre: 'Sede Principal - Lima' },
+      { id: 2, nombre: 'Sede Sur - Arequipa' },
+      { id: 3, nombre: 'Sede Norte - Trujillo' }
+    ]);
+  }
+
+  linkBranch() {
+    if (!this.selectedBranch) return;
+    // TODO: Implementar llamada real al servicio (ej: this.usuarioService.vincularSede(...))
+    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Sede ${this.selectedSede.nombre} vinculada correctamente.` });
+    this.displaySedeDialog = false;
+    this.selectedBranch = null;
   }
 }
