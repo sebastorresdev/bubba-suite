@@ -33,32 +33,22 @@ export const routes: Routes = [
                 path: 'usuarios/editar/:id',
                 loadComponent: () => import('./features/usuarios/add-edit-users/add-edit-user').then(m => m.AddEditUser)
             },
-            // {
-            //     path: 'usuarios/crear',
-            //     loadComponent: () => import('./features/usuarios/crear-usuario/crear-usuario')
-            //         .then(m => m.CrearUsuario)
-            // },
-            // {
-            //     path: 'usuarios/editar/:id',
-            //     loadComponent: () => import('./features/usuarios/editar-usuario/editar-usuario')
-            //         .then(m => m.EditarUsuario)
-            // },
-            // // Roles
-            // {
-            //     path: 'roles',
-            //     loadComponent: () => import('./features/roles/listar-roles/listar-roles')
-            //         .then(m => m.ListarRoles)
-            // },
-            // {
-            //     path: 'roles/editar/:id',
-            //     loadComponent: () => import('./features/roles/editar-rol/editar-rol')
-            //         .then(m => m.EditarRol)
-            // }
+            {
+                path: 'sucursales',
+                loadComponent: () => import('./features/branches/branches-list/branches-list').then(m => m.BranchesList)
+            },
+            {
+                path: 'sucursales/nuevo',
+                loadComponent: () => import('./features/branches/add-edit-branches/add-edit-branch').then(m => m.AddEditBranch)
+            },
+            {
+                path: 'sucursales/editar/:id',
+                loadComponent: () => import('./features/branches/add-edit-branches/add-edit-branch').then(m => m.AddEditBranch)
+            },
             {
                 path: '404',
                 loadComponent: () => import('./shared/not-found/not-found').then(m => m.NotFound)
             },
-
             // Si la ruta no existe PERO el usuario ya cruzó el authGuard, lo mandamos al 404 interno
             { path: '**', redirectTo: '404' }
         ]

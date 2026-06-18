@@ -33,4 +33,8 @@ export class BranchService {
   getAvailableBranches(): Observable<BranchResponse[]> {
     return this.http.get<BranchResponse[]>(`${this.base}/available`);
   }
+
+  updateBranchStatus(id: string, isActive: boolean): Observable<void> {
+    return this.http.patch<void>(`${this.base}/${id}/status`, { isActive });
+  }
 }

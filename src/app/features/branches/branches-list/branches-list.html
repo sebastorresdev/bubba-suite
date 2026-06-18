@@ -1,0 +1,140 @@
+<p-toast />
+<p-confirmDialog />
+
+<div
+  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 mx-1 animate-fade-in"
+>
+  <div>
+    <h2 class="dark:text-surface-0 text-surface-800 font-extrabold text-2xl m-0 leading-tight">
+      Gestión de Sucursales
+    </h2>
+    <p class="dark:text-surface-400 text-surface-500 text-sm mt-1 mb-0 leading-normal">
+      Administra las sedes, locales y almacenes de la empresa.
+    </p>
+  </div>
+</div>
+
+<p-card>
+  <p-table
+    [value]="branches()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    class="p-datatable-sm"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [globalFilterFields]="['name', 'address']"
+    #dt
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-1 px-0.5">
+        <!-- Búsqueda -->
+        <p-iconfield class="w-full md:w-auto">
+          <p-inputicon class="pi pi-search text-surface-400" />
+          <input
+            pInputText
+            type="text"
+            class="w-full md:w-80"
+            pSize="small"
+            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+            placeholder="Buscar sucursal..."
+          />
+        </p-iconfield>
+
+        <!-- Controles y Acciones -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Filtros -->
+          <p-button
+            severity="secondary"
+            size="small"
+            label="Filters"
+            icon="pi pi-filter"
+            [outlined]="true"
+          />
+
+          <!-- Separador Visual Ligero -->
+          <span class="w-px h-6 bg-surface-200 dark:bg-surface-800 hidden sm:block mx-1"></span>
+
+          <!-- Exportar -->
+          <p-button
+            label="Export"
+            size="small"
+            icon="pi pi-upload"
+            [outlined]="true"
+            severity="secondary"
+          />
+
+          <!-- Nuevo Usuario -->
+          <p-button label="Nuevo" size="small" icon="pi pi-plus" (onClick)="goToCreate()" />
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="width: 25%">Nombre <p-sortIcon field="name" /></th>
+        <th pSortableColumn="address" style="width: 40%">
+          Dirección <p-sortIcon field="address" />
+        </th>
+        <th pSortableColumn="isActive" style="width: 15%">
+          Estado <p-sortIcon field="isActive" />
+        </th>
+        <th style="width: 20%">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-branch>
+      <tr>
+        <td>{{ branch.name }}</td>
+        <td>{{ branch.address }}</td>
+        <td>
+          @if (branch.isActive) {
+            <p-tag severity="success" value="Activo" />
+          } @else {
+            <p-tag severity="danger" value="Inactivo" />
+          }
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              [rounded]="true"
+              pTooltip="Editar"
+              tooltipPosition="top"
+              (onClick)="goToEdit(branch.id)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              [rounded]="true"
+              severity="danger"
+              pTooltip="Eliminar"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(branch)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <tr>
+          <td><p-skeleton /></td>
+          <td><p-skeleton /></td>
+          <td><p-skeleton /></td>
+          <td><p-skeleton /></td>
+        </tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4" class="text-center py-6">
+          <p class="text-surface-500">No se encontraron sucursales.</p>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
