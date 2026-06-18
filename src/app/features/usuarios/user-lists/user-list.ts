@@ -14,7 +14,7 @@ import { ToastModule } from 'primeng/toast';
 import { AvatarModule } from 'primeng/avatar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { UserService } from '../services/user.service';
-import { UserResponse, UserStatus } from '../models/user.models';
+import { UserResponse } from '../models/user.models';
 import { MessageModule } from 'primeng/message';
 import { CardModule } from 'primeng/card';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -44,8 +44,8 @@ export class UserList implements OnInit {
 
     users = signal<UserResponse[]>([]);
     totalUsers = computed(() => this.users().length);
-    activeUsers = computed(() => this.users().filter(u => u.status === UserStatus.Active).length);
-    inactiveUsers = computed(() => this.users().filter(u => u.status === UserStatus.Inactive).length);
+    activeUsers = computed(() => this.users().filter(u => u.isActive).length);
+    inactiveUsers = computed(() => this.users().filter(u => !u.isActive).length);
     loading = signal(false);
     errorMessage = signal<string | null>(null);
     globalSearch = '';
@@ -126,12 +126,11 @@ export class UserList implements OnInit {
       return `${environment.serverUrl}${photoUrl}`;
     }
 
-    getStatusSeverity(status: UserStatus): 'success' | 'secondary' {
-      return status === UserStatus.Active ? 'success' : 'secondary';
+    getStatusSeverity(isActive: boolean): 'success' | 'secondary' {
+      return isActive ? 'success' : 'secondary';
     }
 
-    getStatusLabel(status: UserStatus): string {
-      return status === UserStatus.Active ? 'Active' : 'Inactive';
+    getStatusLabel(isActive: boolean): string {
+      return isActive ? 'Active' : 'Inactive';
     }
   }
-

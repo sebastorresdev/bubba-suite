@@ -17,8 +17,8 @@ import { switchMap, of } from 'rxjs';
 import { UserService } from '../services/user.service';
 import { RoleService } from '../../roles/services/role.service';
 import { RoleResponse } from '../../roles/models/role.models';
-import { UserStatus } from '../models/user.models';
 import { CardModule } from 'primeng/card';
+import { BranchService } from '../../branches/services/branch.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -40,6 +40,7 @@ export class AddEditUser implements OnInit {
   private roleService = inject(RoleService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private branchService = inject(BranchService);
 
   photoPreview = signal<string | null>(null);
   photoFile = signal<File | null>(null);
@@ -51,9 +52,7 @@ export class AddEditUser implements OnInit {
   userId = this.route.snapshot.paramMap.get('id');
   isEditing = computed(() => !!this.userId);
 
-  currentUserStatus = signal<UserStatus>(UserStatus.Active);
-  isActive = computed(() => this.currentUserStatus() === UserStatus.Active);
-
+  isActiveUser = signal<boolean>(true);
   roles = signal<RoleResponse[]>([]);
   loading = signal(false);
   saving = signal(false);
@@ -67,13 +66,8 @@ export class AddEditUser implements OnInit {
     phoneNumber: [''],
     profilePicture: [null as string | null],
     roleId: ['', Validators.required],
-    status: [UserStatus.Active, Validators.required]
+    isActive: [true, Validators.required]
   });
-
-  statusOptions = [
-    { label: 'Active', value: UserStatus.Active },
-    { label: 'Inactive', value: UserStatus.Inactive }
-  ];
 
   ngOnInit() {
     this.roleService.getAll().subscribe({
@@ -96,10 +90,10 @@ export class AddEditUser implements OnInit {
             phoneNumber: user.phoneNumber,
             profilePicture: user.profilePicture,
             roleId: user.roleId,
-            status: user.status ?? UserStatus.Active
+            isActive: user.isActive ?? true
           });
 
-          this.currentUserStatus.set(user.status ?? UserStatus.Active);
+          this.isActiveUser.set(user.isActive ?? true);
           if (user.profilePicture) {
             this.photoPreview.set(`${environment.serverUrl}${user.profilePicture}`);
           }
@@ -161,7 +155,7 @@ export class AddEditUser implements OnInit {
       phoneNumber: v.phoneNumber?.trim() || null,
       profilePicture: v.profilePicture || null,
       roleId: v.roleId,
-      status: v.status ?? UserStatus.Active
+      isActive: v.isActive ?? true
     };
     if (!this.isEditing()) base.password = v.password;
     return base;
@@ -257,7 +251,7 @@ export class AddEditUser implements OnInit {
   }
 
   toggleStatus(activate: boolean) {
-    const newStatus = activate ? UserStatus.Active : UserStatus.Inactive;
+    const newStatus = activate;
     const actionText = activate ? 'reactivate' : 'deactivate';
 
     this.confirmationService.confirm({
@@ -269,11 +263,11 @@ export class AddEditUser implements OnInit {
       acceptButtonStyleClass: activate ? 'p-button-success' : 'p-button-warning',
       accept: () => {
         this.saving.set(true);
-        this.userService.changeStatus(this.userId!, newStatus).subscribe({
+        this.userService.updateUserStatus(this.userId!, newStatus).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Success', detail: `User ${actionText}d successfully.` });
-            this.currentUserStatus.set(newStatus);
-            this.form.patchValue({ status: newStatus });
+            this.isActiveUser.set(newStatus);
+            this.form.patchValue({ isActive: newStatus });
             this.saving.set(false);
           },
           error: () => {
@@ -291,18 +285,18 @@ export class AddEditUser implements OnInit {
   }
 
   loadAvailableBranches() {
-    // TODO: Llamar al servicio para traer SOLO sedes sin vincular
-    this.availableBranches.set([
-      { id: 1, nombre: 'Sede Principal - Lima' },
-      { id: 2, nombre: 'Sede Sur - Arequipa' },
-      { id: 3, nombre: 'Sede Norte - Trujillo' }
-    ]);
+    this.branchService.getAvailableBranches().subscribe({
+      next: (branches) => this.availableBranches.set(branches),
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not load available branches.' })
+    });
   }
 
   linkBranch() {
     if (!this.selectedBranch) return;
-    // TODO: Implementar llamada real al servicio (ej: this.usuarioService.vincularSede(...))
-    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Sede ${this.selectedSede.nombre} vinculada correctamente.` });
+
+    // TODO: Lógica para enviar al UserService la vinculación de this.userId! con this.selectedBranch.id
+    // this.userService.linkBranch(this.userId!, this.selectedBranch.id).subscribe(...)
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Branch ${this.selectedBranch.name} linked successfully.` });
     this.displaySedeDialog = false;
     this.selectedBranch = null;
   }

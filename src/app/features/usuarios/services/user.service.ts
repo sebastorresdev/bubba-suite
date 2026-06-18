@@ -36,7 +36,7 @@ export class UserService {
     return this.http.post<{ url: string }>(`${this.base}/foto`, formData);
   }
 
-  changeStatus(id: string, status: number) {
-    return this.http.patch(`${this.base}/${id}/estado`, { estado: status });
+  updateUserStatus(id: string, isActive: boolean) {
+    return this.http.patch(`${this.base}/${id}/status`, { isActive });
   }
 }

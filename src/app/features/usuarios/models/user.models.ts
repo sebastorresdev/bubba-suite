@@ -5,7 +5,7 @@ export interface UserResponse {
   profilePicture: string | null;
   email: string | null;
   roleName: string;
-  status: UserStatus;
+  isActive: boolean;
 }
 
 export interface UserDetailResponse {
@@ -16,7 +16,7 @@ export interface UserDetailResponse {
   phoneNumber: string | null;
   email: string | null;
   roleId: string;
-  status: UserStatus;
+  isActive: boolean;
 }
 
 export interface CreateUserRequest {
@@ -36,9 +36,4 @@ export interface UpdateUserRequest {
   email: string | null;
   phoneNumber: string | null;
   roleId: string;
-}
-
-export enum UserStatus {
-    Active = 0,
-    Inactive = 1,
 }

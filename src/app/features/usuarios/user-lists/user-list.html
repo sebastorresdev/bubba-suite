@@ -125,7 +125,7 @@
             </th>
             <th pResizableColumn pSortableColumn="email">Email <p-sortIcon field="email" /></th>
             <th pResizableColumn pSortableColumn="roleName">Role <p-sortIcon field="roleName" /></th>
-            <th pResizableColumn pSortableColumn="status">Status <p-sortIcon field="status" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Status <p-sortIcon field="isActive" /></th>
             <th class="text-center" style="width: 120px">Actions</th>
           </tr>
         </ng-template>
@@ -154,7 +154,7 @@
               }
             </td>
             <td>
-              <p-tag [value]="getStatusLabel(user.status)" [severity]="getStatusSeverity(user.status)" />
+              <p-tag [value]="getStatusLabel(user.isActive)" [severity]="getStatusSeverity(user.isActive)" />
             </td>
             <td>
               <div class="flex justify-center gap-1">
@@ -243,8 +243,8 @@
                       />
                     }
                     <p-tag
-                      [value]="getStatusLabel(user.status)"
-                      [severity]="getStatusSeverity(user.status)"
+                      [value]="getStatusLabel(user.isActive)"
+                      [severity]="getStatusSeverity(user.isActive)"
                       class="text-[10px] px-2 py-0.5 font-semibold"
                     />
                   </div>

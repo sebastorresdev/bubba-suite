@@ -30,7 +30,7 @@
       />
 
       <!-- Cambiar Estado -->
-      @if (isActive()) {
+      @if (isActiveUser()) {
         <p-button
           label="Deactivate"
           icon="pi pi-ban"
@@ -140,8 +140,6 @@
                   (onError)="onPhotoError($event)" />
             </div>
           </div>
-
-
 
         </div>
 
@@ -293,12 +291,12 @@
       Seleccione una sede disponible para vincular a este usuario.
     </span>
     <div class="flex flex-col gap-2 mb-4">
-        <label for="sede" class="font-semibold text-sm text-surface-700 dark:text-surface-300">Sede Disponible</label>
-        <p-select id="sede" [options]="sedesDisponibles()" [(ngModel)]="selectedSede" optionLabel="nombre"
+        <label for="id" class="font-semibold text-sm text-surface-700 dark:text-surface-300">Sede Disponible</label>
+        <p-select id="id" [options]="availableBranches()" [(ngModel)]="selectedBranch" optionLabel="name"
                   placeholder="Seleccione una sede" class="w-full" appendTo="body"></p-select>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-surface-100 dark:border-surface-800">
         <p-button label="Cancelar" severity="secondary" [outlined]="true" size="small" (onClick)="displaySedeDialog = false" />
-        <p-button label="Vincular" size="small" icon="pi pi-check" (onClick)="vincularSede()" [disabled]="!selectedSede" />
+        <p-button label="Vincular" size="small" icon="pi pi-check" (onClick)="linkBranch()" [disabled]="!selectedBranch" />
     </div>
 </p-dialog>
