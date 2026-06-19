@@ -17,6 +17,7 @@ export interface UserDetailResponse {
   email: string | null;
   roleId: string;
   isActive: boolean;
+  branchId: string | null;
 }
 
 export interface CreateUserRequest {

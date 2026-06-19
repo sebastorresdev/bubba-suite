@@ -1,12 +1,9 @@
 <p-confirmDialog />
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 mx-1 transition-opacity duration-300 ease-out">
+  <!-- Título y botón de atrás a la izquierda -->
   <div class="flex items-center gap-3">
-    <p-button icon="pi pi-arrow-left"
-              [text]="true"
-              [rounded]="true"
-              (onClick)="goBack()"
-              class="shrink-0" />
+    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="goBack()" class="shrink-0" />
     <div>
       <h2 class="dark:text-surface-0 text-surface-800 font-extrabold text-2xl m-0 leading-tight">
         {{ isEditing() ? 'Edit User' : 'New User' }}
@@ -17,58 +14,21 @@
     </div>
   </div>
 
+  <!-- Acciones a la derecha -->
   @if (isEditing()) {
-    <div class="flex flex-wrap items-center gap-2">
-      <!-- Vincular Sede -->
+    <div class="flex items-center gap-2">
+      <!-- Menú de Acciones -->
+      <p-menu #menu [model]="userActions()" [popup]="true" appendTo="body" />
       <p-button
-        label="Vincular Sede"
-        icon="pi pi-building"
+        label="Actions"
+        icon="pi pi-cog"
         [outlined]="true"
         severity="secondary"
         size="small"
-        (onClick)="showSedeDialog()"
+        (click)="menu.toggle($event)"
       />
-
-      <!-- Cambiar Estado -->
-      @if (isActiveUser()) {
-        <p-button
-          label="Deactivate"
-          icon="pi pi-ban"
-          [outlined]="true"
-          severity="warn"
-          size="small"
-          (onClick)="toggleStatus(false)"
-        />
-      } @else {
-        <p-button
-          label="Reactivate"
-          icon="pi pi-check-circle"
-          [outlined]="true"
-          severity="success"
-          size="small"
-          (onClick)="toggleStatus(true)"
-        />
-      }
-
-      <!-- Eliminar Usuario -->
-      <p-button
-        label="Delete"
-        icon="pi pi-trash"
-        [outlined]="true"
-        severity="danger"
-        size="small"
-        (onClick)="confirmDelete()"
-      />
-
-      <span class="w-px h-6 bg-surface-200 dark:bg-surface-800 hidden sm:block mx-1"></span>
-
       <!-- Crear Nuevo -->
-      <p-button
-        label="Create New"
-        icon="pi pi-plus"
-        size="small"
-        (onClick)="goToCreateNew()"
-      />
+      <p-button label="Create New" icon="pi pi-plus" size="small" (onClick)="goToCreateNew()" />
     </div>
   }
 </div>
@@ -85,218 +45,257 @@
       </div>
     </div>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
+    <!-- Contenedor relativo para la marca de "INACTIVO" -->
+    <div class="relative">
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Marca de Usuario Inactivo -->
+      @if (isEditing() && !isActiveUser()) {
+        <div class="absolute inset-0 bg-surface-0/50 dark:bg-surface-900/50 z-10 rounded-xl flex items-center justify-center overflow-hidden">
+          <div class="absolute -rotate-45 bg-amber-500 text-white font-bold uppercase text-sm tracking-wider py-2 px-16 text-center -ml-12 -mt-36">
+            Usuario Inactivo
+          </div>
+        </div>
+      }
 
-        <!-- COLUMNA IZQUIERDA: Perfil y Estado (1/3) -->
-        <div class="lg:col-span-1 flex flex-col gap-6">
+      <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
 
-          <!-- Foto de perfil -->
-          <div class="flex flex-col items-center text-center p-6
-                      bg-surface-50 dark:bg-surface-800/40 rounded-xl
-                      border border-surface-100 dark:border-surface-800 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <span class="font-bold text-surface-800 dark:text-surface-200 text-sm self-start">
-              Profile Picture
-            </span>
+          <!-- COLUMNA IZQUIERDA: Perfil y Estado (1/4) -->
+          <div class="lg:col-span-1 flex flex-col gap-6">
 
-            <!-- Avatar -->
-            <div class="relative">
-              @if (photoPreview()) {
-                <img [src]="photoPreview()"
-                     class="w-28 h-28 rounded-full object-cover
-                            border-2 border-primary"
-                     alt="Avatar" />
-                <p-button
-                    icon="pi pi-trash"
-                    [rounded]="true"
-                    severity="danger"
-                    size="small"
-                    (onClick)="clearPhoto()"
-                    class="absolute -bottom-1 -right-1"/>
-              } @else {
-                <div class="w-28 h-28 rounded-full bg-surface-200 dark:bg-surface-700
-                            flex items-center justify-center text-surface-500
-                            border-2 border-dashed border-surface-300 dark:border-surface-600">
-                  <i class="pi pi-user text-5xl"></i>
-                </div>
-              }
-            </div>
+            <!-- Foto de perfil -->
+            <div class="flex flex-col items-center text-center p-4
+                        bg-surface-50 dark:bg-surface-800/40 rounded-xl
+                        border border-surface-100 dark:border-surface-800 gap-4">
 
-            <!-- Upload -->
-            <div class="flex flex-col gap-2">
-              <span class="text-xs text-surface-500">
-                Allowed formats: JPG, PNG, WEBP — Max 2MB
+              <span class="font-bold text-surface-800 dark:text-surface-200 text-sm self-start">
+                Profile Picture
               </span>
-              <p-fileUpload
-                  mode="basic"
-                  chooseLabel="Choose photo"
-                  chooseIcon="pi pi-upload"
-                  accept="image/jpeg,image/png,image/webp"
-                  [maxFileSize]="2097152"
-                  [auto]="false"
-                  (onSelect)="onPhotoSelected($event)"
-                  (onError)="onPhotoError($event)" />
+
+              <!-- Avatar -->
+              <div class="relative">
+                @if (photoPreview()) {
+                  <img [src]="photoPreview()"
+                       class="w-24 h-24 rounded-full object-cover
+                              border-2 border-primary"
+                       alt="Avatar" />
+                  <p-button
+                      icon="pi pi-trash"
+                      [rounded]="true"
+                      severity="danger"
+                      size="small"
+                      (onClick)="clearPhoto()"
+                      class="absolute -bottom-1 -right-1"/>
+                } @else {
+                  <div class="w-24 h-24 rounded-full bg-surface-200 dark:bg-surface-700
+                              flex items-center justify-center text-surface-500
+                              border-2 border-dashed border-surface-300 dark:border-surface-600">
+                    <i class="pi pi-user text-4xl"></i>
+                  </div>
+                }
+              </div>
+
+              <!-- Upload -->
+              <div class="flex flex-col gap-2">
+                <span class="text-xs text-surface-500">
+                  Allowed formats: JPG, PNG, WEBP — Max 2MB
+                </span>
+                <p-fileUpload
+                    mode="basic"
+                    chooseLabel="Choose photo"
+                    chooseIcon="pi pi-upload"
+                    accept="image/jpeg,image/png,image/webp"
+                    [maxFileSize]="2097152"
+                    [auto]="false"
+                    (onSelect)="onPhotoSelected($event)"
+                    (onError)="onPhotoError()" />
+              </div>
             </div>
+
+            <!-- Vincular/Cambiar Sede -->
+            @if (isEditing()) {
+              <div class="flex flex-col gap-4 p-4
+                          bg-surface-50 dark:bg-surface-800/40 rounded-xl
+                          border border-surface-100 dark:border-surface-800">
+                <span class="font-bold text-surface-800 dark:text-surface-200 text-sm">
+                  Linked Branch
+                </span>
+                @if (linkedBranchName()) {
+                  <div class="flex items-center gap-2 p-2 rounded-md bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700">
+                    <i class="pi pi-building text-primary"></i>
+                    <span class="text-sm font-medium text-surface-700 dark:text-surface-200 flex-1">{{ linkedBranchName() }}</span>
+                    <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" (onClick)="showSedeDialog()" pTooltip="Change branch" tooltipPosition="top" />
+                    <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="unlinkBranch()" pTooltip="Unlink branch" tooltipPosition="top" />
+                  </div>
+                } @else {
+                  <p-button
+                    label="Link Branch"
+                    icon="pi pi-building"
+                    [outlined]="true"
+                    severity="secondary"
+                    (onClick)="showSedeDialog()"
+                    styleClass="w-full justify-center" />
+                }
+              </div>
+            }
           </div>
 
-        </div>
+          <!-- COLUMNA DERECHA: Campos de Formulario Principales (3/4) -->
+          <div class="lg:col-span-3 p-6 bg-surface-0 dark:bg-surface-900
+                      border border-surface-200 dark:border-surface-800 rounded-xl flex flex-col gap-5">
 
-        <!-- COLUMNA DERECHA: Campos de Formulario Principales (2/3) -->
-        <div class="lg:col-span-2 p-6 bg-surface-0 dark:bg-surface-900
-                    border border-surface-200 dark:border-surface-800 rounded-xl flex flex-col gap-5">
+            <h3 class="text-base font-bold text-surface-800 dark:text-surface-200 border-b border-surface-100 dark:border-surface-800 pb-2.5 m-0">
+              Personal Data and Credentials
+            </h3>
 
-          <h3 class="text-base font-bold text-surface-800 dark:text-surface-200 border-b border-surface-100 dark:border-surface-800 pb-2.5 m-0">
-            Personal Data and Credentials
-          </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            <div class="flex flex-col gap-2">
-              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Full Name <span class="text-red-500">*</span>
-              </label>
-              <input pInputText
-                     formControlName="name"
-                     placeholder="For example, John Doe"
-                     [invalid]="isFieldInvalid('name')" />
-              @if (isFieldInvalid('name')) {
-                <small class="text-red-500 flex items-center gap-1">
-                  <i class="pi pi-exclamation-circle text-xs"></i>
-                  The name is required.
-                </small>
-              }
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Username <span class="text-red-500">*</span>
-              </label>
-              <input pInputText
-                     formControlName="username"
-                     placeholder="johndoe"
-                     [invalid]="isFieldInvalid('username')" />
-              @if (isFieldInvalid('username')) {
-                <small class="text-red-500 flex items-center gap-1">
-                  <i class="pi pi-exclamation-circle text-xs"></i>
-                  Minimum 6 characters.
-                </small>
-              }
-            </div>
-
-            @if (!isEditing()) {
               <div class="flex flex-col gap-2">
                 <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                  Password <span class="text-red-500">*</span>
+                  Full Name <span class="text-red-500">*</span>
                 </label>
-                <p-password
-                    formControlName="password"
-                    [feedback]="true"
-                    [toggleMask]="true"
-                    class="w-full"
-                    inputStyleClass="w-full"
-                    placeholder="••••••••"
-                    [invalid]="isFieldInvalid('password')" />
-                @if (isFieldInvalid('password')) {
+                <input pInputText
+                       formControlName="name"
+                       placeholder="For example, John Doe"
+                       [invalid]="isFieldInvalid('name')" />
+                @if (isFieldInvalid('name')) {
+                  <small class="text-red-500 flex items-center gap-1">
+                    <i class="pi pi-exclamation-circle text-xs"></i>
+                    The name is required.
+                  </small>
+                }
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                  Username <span class="text-red-500">*</span>
+                </label>
+                <input pInputText
+                       formControlName="username"
+                       placeholder="johndoe"
+                       [invalid]="isFieldInvalid('username')" />
+                @if (isFieldInvalid('username')) {
                   <small class="text-red-500 flex items-center gap-1">
                     <i class="pi pi-exclamation-circle text-xs"></i>
                     Minimum 6 characters.
                   </small>
                 }
               </div>
+
+              @if (!isEditing()) {
+                <div class="flex flex-col gap-2">
+                  <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                    Password <span class="text-red-500">*</span>
+                  </label>
+                  <p-password
+                      formControlName="password"
+                      [feedback]="true"
+                      [toggleMask]="true"
+                      class="w-full"
+                      inputStyleClass="w-full"
+                      placeholder="••••••••"
+                      [invalid]="isFieldInvalid('password')" />
+                  @if (isFieldInvalid('password')) {
+                    <small class="text-red-500 flex items-center gap-1">
+                      <i class="pi pi-exclamation-circle text-xs"></i>
+                      Minimum 6 characters.
+                    </small>
+                  }
+                </div>
+              }
+
+              <div class="flex flex-col gap-2">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                  Email
+                </label>
+                <input pInputText
+                       formControlName="email"
+                       placeholder="correo@empresa.com"
+                       [invalid]="isFieldInvalid('email')" />
+                @if (isFieldInvalid('email')) {
+                  <small class="text-red-500 flex items-center gap-1">
+                    <i class="pi pi-exclamation-circle text-xs"></i>
+                    Enter a valid email.
+                  </small>
+                }
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                  Phone
+                </label>
+                <input pInputText
+                       formControlName="phoneNumber"
+                       placeholder="+1 234 567 890" />
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                  User Role <span class="text-red-500">*</span>
+                </label>
+                <p-select
+                    formControlName="roleId"
+                    [options]="roles()"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Select a role"
+                    class="w-full"
+                    [invalid]="isFieldInvalid('roleId')" />
+                @if (isFieldInvalid('roleId')) {
+                  <small class="text-red-500 flex items-center gap-1">
+                    <i class="pi pi-exclamation-circle text-xs"></i>
+                    You must select a role.
+                  </small>
+                }
+              </div>
+
+            </div>
+
+            <!-- Error global -->
+            @if (errorMessage()) {
+              <p-message severity="error" styleClass="w-full mt-2">
+                {{ errorMessage()! }}
+              </p-message>
             }
-
-            <div class="flex flex-col gap-2">
-              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Email
-              </label>
-              <input pInputText
-                     formControlName="email"
-                     placeholder="correo@empresa.com"
-                     [invalid]="isFieldInvalid('email')" />
-              @if (isFieldInvalid('email')) {
-                <small class="text-red-500 flex items-center gap-1">
-                  <i class="pi pi-exclamation-circle text-xs"></i>
-                  Enter a valid email.
-                </small>
-              }
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                Phone
-              </label>
-              <input pInputText
-                     formControlName="phoneNumber"
-                     placeholder="+1 234 567 890" />
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
-                User Role <span class="text-red-500">*</span>
-              </label>
-              <p-select
-                  formControlName="roleId"
-                  [options]="roles()"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select a role"
-                  class="w-full"
-                  [invalid]="isFieldInvalid('roleId')" />
-              @if (isFieldInvalid('roleId')) {
-                <small class="text-red-500 flex items-center gap-1">
-                  <i class="pi pi-exclamation-circle text-xs"></i>
-                  You must select a role.
-                </small>
-              }
-            </div>
 
           </div>
 
-          <!-- Error global -->
-          @if (errorMessage()) {
-            <p-message severity="error" styleClass="w-full mt-2">
-              {{ errorMessage()! }}
-            </p-message>
-          }
-
         </div>
 
-      </div>
+        <!-- Acciones -->
+        <div class="flex justify-end gap-3 pt-4
+                    border-t border-surface-100 dark:border-surface-800">
+          <p-button label="Cancel"
+                    [outlined]="true"
+                    severity="secondary"
+                    size="small"
+                    (onClick)="goBack()" />
+          <p-button [label]="isEditing() ? 'Save Changes' : 'Save User'"
+                    size="small"
+                    icon="pi pi-save"
+                    type="submit"
+                    [loading]="saving()"
+                    [disabled]="form.invalid || !isActiveUser()" />
+        </div>
 
-      <!-- Acciones -->
-      <div class="flex justify-end gap-3 pt-4
-                  border-t border-surface-100 dark:border-surface-800">
-        <p-button label="Cancel"
-                  [outlined]="true"
-                  severity="secondary"
-                  size="small"
-                  (onClick)="goBack()" />
-        <p-button [label]="isEditing() ? 'Save Changes' : 'Save User'"
-                  size="small"
-                  icon="pi pi-save"
-                  type="submit"
-                  [loading]="saving()"
-                  [disabled]="form.invalid" />
-      </div>
-
-    </form>
+      </form>
+    </div>
   }
 </p-card>
 
 <!-- Diálogo para vincular Sede -->
 <p-dialog header="Vincular Sede" [(visible)]="displaySedeDialog" [modal]="true" [style]="{ width: '25rem' }">
-    <span class="text-surface-500 dark:text-surface-400 block mb-5 text-sm">
-      Seleccione una sede disponible para vincular a este usuario.
-    </span>
-    <div class="flex flex-col gap-2 mb-4">
-        <label for="id" class="font-semibold text-sm text-surface-700 dark:text-surface-300">Sede Disponible</label>
-        <p-select id="id" [options]="availableBranches()" [(ngModel)]="selectedBranch" optionLabel="name"
-                  placeholder="Seleccione una sede" class="w-full" appendTo="body"></p-select>
-    </div>
-    <div class="flex justify-end gap-2 pt-4 border-t border-surface-100 dark:border-surface-800">
-        <p-button label="Cancelar" severity="secondary" [outlined]="true" size="small" (onClick)="displaySedeDialog = false" />
-        <p-button label="Vincular" size="small" icon="pi pi-check" (onClick)="linkBranch()" [disabled]="!selectedBranch" />
-    </div>
+  <span class="text-surface-500 dark:text-surface-400 block mb-5 text-sm">
+    Seleccione una sede disponible para vincular a este usuario.
+  </span>
+  <div class="flex flex-col gap-2 mb-4">
+      <label for="branch" class="font-semibold text-sm text-surface-700 dark:text-surface-300">Sede Disponible</label>
+      <p-select id="branch" [options]="availableBranches()" [(ngModel)]="selectedBranch" optionLabel="name"
+                placeholder="Seleccione una sede" class="w-full" appendTo="body" [style]="{'width':'100%'}"></p-select>
+  </div>
+  <div class="flex justify-end gap-2 pt-4 border-t border-surface-100 dark:border-surface-800">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" size="small" (onClick)="displaySedeDialog.set(false)" />
+      <p-button label="Vincular" size="small" icon="pi pi-check" (onClick)="linkBranch()" [disabled]="!selectedBranch()" />
+  </div>
 </p-dialog>

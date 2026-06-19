@@ -112,6 +112,7 @@ export class AddEditBranch implements OnInit {
         next: (response) => {
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Sucursal creada correctamente.' });
           // Al crear, redirigimos a la página de edición de la nueva sucursal
+          // No es necesario `saving.set(false)` aquí porque el componente será destruido.
           this.router.navigate(['/sucursales/editar', response.id]);
         },
         error: (err) => {

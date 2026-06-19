@@ -31,7 +31,7 @@ export class ThemeService {
       localStorage.setItem('skvia_theme', 'dark');
     } else {
       element.classList.remove('dark');
-      localStorage.setItem('skvia_theme', 'claro');
+      localStorage.setItem('skvia_theme', 'light');
     }
   }
 }

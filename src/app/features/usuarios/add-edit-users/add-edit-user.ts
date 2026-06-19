@@ -8,26 +8,27 @@ import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
-import { SkeletonModule } from 'primeng/skeleton';
+import { MenuModule } from 'primeng/menu';
 import { FileUploadModule } from 'primeng/fileupload';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
-import { switchMap, of } from 'rxjs';
+import { of, switchMap } from 'rxjs';
 import { UserService } from '../services/user.service';
 import { RoleService } from '../../roles/services/role.service';
 import { RoleResponse } from '../../roles/models/role.models';
 import { CardModule } from 'primeng/card';
 import { BranchService } from '../../branches/services/branch.service';
+import { SkeletonModule } from 'primeng/skeleton';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-add-edit-user',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule,
-    PasswordModule, SelectModule, ToastModule, MessageModule,
-    SkeletonModule, FileUploadModule, CardModule, ConfirmDialogModule, DialogModule
+    CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule, PasswordModule,
+    SelectModule, ToastModule, MessageModule, SkeletonModule, FileUploadModule, CardModule,
+    ConfirmDialogModule, DialogModule, MenuModule
   ],
   providers: [ConfirmationService],
   templateUrl: './add-edit-user.html'
@@ -45,8 +46,9 @@ export class AddEditUser implements OnInit {
   photoPreview = signal<string | null>(null);
   photoFile = signal<File | null>(null);
 
-  displaySedeDialog = false;
-  selectedBranch: any = null;
+  linkedBranchName = signal<string | null>(null);
+  displaySedeDialog = signal(false);
+  selectedBranch = signal<any | null>(null);
   availableBranches = signal<any[]>([]);
 
   userId = this.route.snapshot.paramMap.get('id');
@@ -57,6 +59,24 @@ export class AddEditUser implements OnInit {
   loading = signal(false);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
+
+  userActions = computed<MenuItem[]>(() => [
+    {
+      label: this.isActiveUser() ? 'Deactivate User' : 'Reactivate User',
+      icon: this.isActiveUser() ? 'pi pi-ban' : 'pi pi-check-circle',
+      command: () => this.toggleStatus(!this.isActiveUser()),
+      styleClass: this.isActiveUser() ? 'text-warn-600 dark:text-warn-400' : 'text-green-600 dark:text-green-400'
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Delete User',
+      icon: 'pi pi-trash',
+      command: () => this.confirmDelete(),
+      styleClass: 'text-red-600 dark:text-red-400'
+    }
+  ]);
 
   form = this.fb.group({
     name: ['', Validators.required],
@@ -80,28 +100,32 @@ export class AddEditUser implements OnInit {
       this.form.get('password')?.clearValidators();
       this.form.get('password')?.updateValueAndValidity();
 
-      this.userService.getById(this.userId!).subscribe({
-        next: user => {
-          console.log(user);
-          this.form.patchValue({
-            name: user.name,
-            username: user.username,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            profilePicture: user.profilePicture,
-            roleId: user.roleId,
-            isActive: user.isActive ?? true
-          });
+      this.userService.getById(this.userId!).pipe(
+        switchMap(user => {
+          if (user.branchId) {
+            return this.branchService.getById(user.branchId).pipe(
+              switchMap(branch => of({ user, branch }))
+            );
+          }
+          return of({ user, branch: null });
+        })
+      ).subscribe({
+        next: ({ user, branch }) => {
+          this.form.patchValue(user);
 
           this.isActiveUser.set(user.isActive ?? true);
           if (user.profilePicture) {
             this.photoPreview.set(`${environment.serverUrl}${user.profilePicture}`);
           }
 
+          if (branch) {
+            this.linkedBranchName.set(branch.name);
+          }
+
           this.loading.set(false);
         },
         error: () => {
-          this.errorMessage.set('Could not load user.');
+          this.errorMessage.set('Could not load user data.');
           this.loading.set(false);
         }
       });
@@ -194,7 +218,7 @@ export class AddEditUser implements OnInit {
     this.photoFile.set(archivo);
   }
 
-  onPhotoError(event: any) {
+  onPhotoError() {
     this.errorMessage.set('The image does not meet the requirements (max 2MB, JPG/PNG/WEBP).');
   }
 
@@ -281,7 +305,7 @@ export class AddEditUser implements OnInit {
 
   showSedeDialog() {
     this.loadAvailableBranches();
-    this.displaySedeDialog = true;
+    this.displaySedeDialog.set(true);
   }
 
   loadAvailableBranches() {
@@ -292,12 +316,19 @@ export class AddEditUser implements OnInit {
   }
 
   linkBranch() {
-    if (!this.selectedBranch) return;
+    if (!this.selectedBranch()) return;
 
     // TODO: Lógica para enviar al UserService la vinculación de this.userId! con this.selectedBranch.id
-    // this.userService.linkBranch(this.userId!, this.selectedBranch.id).subscribe(...)
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Branch ${this.selectedBranch.name} linked successfully.` });
-    this.displaySedeDialog = false;
-    this.selectedBranch = null;
+    // this.userService.linkBranch(this.userId!, this.selectedBranch()!.id).subscribe(...)
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Branch ${this.selectedBranch()!.name} linked successfully.` });
+    this.linkedBranchName.set(this.selectedBranch()!.name);
+    this.displaySedeDialog.set(false);
+    this.selectedBranch.set(null);
+  }
+
+  unlinkBranch() {
+    // TODO: Lógica para desvincular la sucursal del usuario
+    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Branch unlinked.' });
+    this.linkedBranchName.set(null);
   }
 }
