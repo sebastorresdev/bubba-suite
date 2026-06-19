@@ -39,4 +39,8 @@ export class UserService {
   updateUserStatus(id: string, isActive: boolean) {
     return this.http.patch(`${this.base}/${id}/status`, { isActive });
   }
+
+  assignBranchToUser(userId: string, branchId: string | null) {
+    return this.http.patch(`${this.base}/${userId}/branch`, { branchId });
+  }
 }

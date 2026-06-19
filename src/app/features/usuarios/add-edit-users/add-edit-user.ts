@@ -316,19 +316,50 @@ export class AddEditUser implements OnInit {
   }
 
   linkBranch() {
-    if (!this.selectedBranch()) return;
+    const branchToLink = this.selectedBranch();
+    if (!branchToLink || !this.userId) return;
 
-    // TODO: Lógica para enviar al UserService la vinculación de this.userId! con this.selectedBranch.id
-    // this.userService.linkBranch(this.userId!, this.selectedBranch()!.id).subscribe(...)
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Branch ${this.selectedBranch()!.name} linked successfully.` });
-    this.linkedBranchName.set(this.selectedBranch()!.name);
-    this.displaySedeDialog.set(false);
-    this.selectedBranch.set(null);
+    this.saving.set(true);
+    // Asumimos que tienes un método `linkBranch` en tu `UserService`
+    this.userService.assignBranchToUser(this.userId, branchToLink.id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Sucursal '${branchToLink.name}' vinculada.` });
+        this.linkedBranchName.set(branchToLink.name);
+        this.displaySedeDialog.set(false);
+        this.selectedBranch.set(null);
+        this.saving.set(false);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo vincular la sucursal.' });
+        this.saving.set(false);
+      }
+    });
   }
 
   unlinkBranch() {
-    // TODO: Lógica para desvincular la sucursal del usuario
-    this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Branch unlinked.' });
-    this.linkedBranchName.set(null);
+    if (!this.userId) return;
+
+    this.confirmationService.confirm({
+      message: `¿Está seguro de que desea desvincular la sucursal de este usuario?`,
+      header: 'Confirmar desvinculación',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, desvincular',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.saving.set(true);
+        // Asumimos que tienes un método `unlinkBranch` en tu `UserService`
+        this.userService.assignBranchToUser(this.userId!, null).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'info', summary: 'Información', detail: 'Sucursal desvinculada.' });
+            this.linkedBranchName.set(null);
+            this.saving.set(false);
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo desvincular la sucursal.' });
+            this.saving.set(false);
+          }
+        });
+      }
+    });
   }
 }

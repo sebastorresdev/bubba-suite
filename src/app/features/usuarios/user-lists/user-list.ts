@@ -21,6 +21,8 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { DataViewModule } from 'primeng/dataview';
 import { environment } from '../../../../environments/environment';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ProblemDetails } from '../../../shared/models/problem-details.model';
 
 
 
@@ -85,14 +87,19 @@ export class UserList implements OnInit {
           this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted.' });
           this.loadUsers();
         },
-        error: (err) => {
-          if (err.status === 409) {
-            // Has associated records — suggest archiving
-            this.confirmArchive(user, err.error?.detail);
-          } else {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not delete the user.' });
-          }
-        }
+        error: (err: HttpErrorResponse) => {
+        const problem = err.error as ProblemDetails;
+
+        // Extrae directamente el título y el detalle que configuramos en tu Handler de C#
+        const detailMessage = problem?.detail || 'Ocurrió un error inesperado.';
+        const summaryTitle = problem?.title || 'Error';
+
+        this.messageService.add({
+          severity: 'error',
+          summary: summaryTitle,
+          detail: detailMessage,
+        });
+      },
       });
     }
 
@@ -126,8 +133,8 @@ export class UserList implements OnInit {
       return `${environment.serverUrl}${photoUrl}`;
     }
 
-    getStatusSeverity(isActive: boolean): 'success' | 'secondary' {
-      return isActive ? 'success' : 'secondary';
+    getStatusSeverity(isActive: boolean): 'success' | 'danger' {
+      return isActive ? 'success' : 'danger';
     }
 
     getStatusLabel(isActive: boolean): string {

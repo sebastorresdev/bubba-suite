@@ -18,7 +18,8 @@ import { ToastModule } from 'primeng/toast';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputTextModule } from 'primeng/inputtext';
-
+import { HttpErrorResponse } from '@angular/common/http';
+import { ProblemDetails } from '../../../shared/models/problem-details.model';
 
 @Component({
   selector: 'app-branches-list',
@@ -34,7 +35,7 @@ import { InputTextModule } from 'primeng/inputtext';
     ConfirmDialogModule,
     InputIconModule,
     IconFieldModule,
-    InputTextModule
+    InputTextModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './branches-list.html',
@@ -64,7 +65,7 @@ export class BranchesList implements OnInit {
       error: () => {
         this.error.set('No se pudieron cargar las sucursales. Intente de nuevo más tarde.');
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -84,20 +85,33 @@ export class BranchesList implements OnInit {
       acceptLabel: 'Sí, eliminar',
       rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => this.deleteBranch(branch.id)
+      accept: () => this.deleteBranch(branch.id),
     });
   }
 
   private deleteBranch(id: string): void {
     this.branchService.delete(id).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Sucursal eliminada correctamente.' });
-        this.branches.update(b => b.filter(branch => branch.id !== id));
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Sucursal eliminada correctamente.',
+        });
+        this.branches.update((b) => b.filter((branch) => branch.id !== id));
       },
-      error: (err) => {
-        const detail = err.error?.message || 'Ocurrió un error al intentar eliminar la sucursal.';
-        this.messageService.add({ severity: 'error', summary: 'Error', detail });
-      }
+      error: (err: HttpErrorResponse) => {
+        const problem = err.error as ProblemDetails;
+
+        // Extrae directamente el título y el detalle que configuramos en tu Handler de C#
+        const detailMessage = problem?.detail || 'Ocurrió un error inesperado.';
+        const summaryTitle = problem?.title || 'Error';
+
+        this.messageService.add({
+          severity: 'error',
+          summary: summaryTitle,
+          detail: detailMessage,
+        });
+      },
     });
   }
 }
