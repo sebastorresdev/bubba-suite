@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SelectModule } from 'primeng/select';
+import { ListboxModule } from 'primeng/listbox';
 import { ToastModule } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
 import { MenuModule } from 'primeng/menu';
@@ -13,7 +14,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
-import { of, switchMap } from 'rxjs';
+import { forkJoin, of, switchMap } from 'rxjs';
 import { UserService } from '../services/user.service';
 import { RoleService } from '../../roles/services/role.service';
 import { RoleResponse } from '../../roles/models/role.models';
@@ -27,7 +28,7 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule, PasswordModule,
-    SelectModule, ToastModule, MessageModule, SkeletonModule, FileUploadModule, CardModule,
+    SelectModule, ListboxModule, ToastModule, MessageModule, SkeletonModule, FileUploadModule, CardModule,
     ConfirmDialogModule, DialogModule, MenuModule
   ],
   providers: [ConfirmationService],
@@ -46,9 +47,9 @@ export class AddEditUser implements OnInit {
   photoPreview = signal<string | null>(null);
   photoFile = signal<File | null>(null);
 
-  linkedBranchName = signal<string | null>(null);
+  linkedBranches = signal<any[]>([]);
   displaySedeDialog = signal(false);
-  selectedBranch = signal<any | null>(null);
+  selectedBranches = signal<any[]>([]);
   availableBranches = signal<any[]>([]);
 
   userId = this.route.snapshot.paramMap.get('id');
@@ -62,7 +63,7 @@ export class AddEditUser implements OnInit {
 
   userActions = computed<MenuItem[]>(() => [
     {
-      label: this.isActiveUser() ? 'Deactivate User' : 'Reactivate User',
+      label: this.isActiveUser() ? 'Desactivar Usuario' : 'Reactivar Usuario',
       icon: this.isActiveUser() ? 'pi pi-ban' : 'pi pi-check-circle',
       command: () => this.toggleStatus(!this.isActiveUser()),
       styleClass: this.isActiveUser() ? 'text-warn-600 dark:text-warn-400' : 'text-green-600 dark:text-green-400'
@@ -71,7 +72,7 @@ export class AddEditUser implements OnInit {
       separator: true
     },
     {
-      label: 'Delete User',
+      label: 'Eliminar Usuario',
       icon: 'pi pi-trash',
       command: () => this.confirmDelete(),
       styleClass: 'text-red-600 dark:text-red-400'
@@ -92,7 +93,7 @@ export class AddEditUser implements OnInit {
   ngOnInit() {
     this.roleService.getAll().subscribe({
       next: data => this.roles.set(data),
-      error: () => this.errorMessage.set('Could not load roles.')
+      error: () => this.errorMessage.set('No se pudieron cargar los roles.')
     });
 
     if (this.isEditing()) {
@@ -100,17 +101,11 @@ export class AddEditUser implements OnInit {
       this.form.get('password')?.clearValidators();
       this.form.get('password')?.updateValueAndValidity();
 
-      this.userService.getById(this.userId!).pipe(
-        switchMap(user => {
-          if (user.branchId) {
-            return this.branchService.getById(user.branchId).pipe(
-              switchMap(branch => of({ user, branch }))
-            );
-          }
-          return of({ user, branch: null });
-        })
-      ).subscribe({
-        next: ({ user, branch }) => {
+      forkJoin({
+        user: this.userService.getById(this.userId!),
+        branches: this.branchService.getAll()
+      }).subscribe({
+        next: ({ user, branches }) => {
           this.form.patchValue(user);
 
           this.isActiveUser.set(user.isActive ?? true);
@@ -118,14 +113,14 @@ export class AddEditUser implements OnInit {
             this.photoPreview.set(`${environment.serverUrl}${user.profilePicture}`);
           }
 
-          if (branch) {
-            this.linkedBranchName.set(branch.name);
-          }
+          const userBranchIds = user.branchIds || [];
+          const linked = branches.filter(b => userBranchIds.includes(b.id));
+          this.linkedBranches.set(linked);
 
           this.loading.set(false);
         },
         error: () => {
-          this.errorMessage.set('Could not load user data.');
+          this.errorMessage.set('No se pudieron cargar los datos del usuario.');
           this.loading.set(false);
         }
       });
@@ -188,8 +183,8 @@ export class AddEditUser implements OnInit {
   private onSuccess(res?: any) {
     this.messageService.add({
       severity: 'success',
-      summary: 'Success',
-      detail: this.isEditing() ? 'User updated.' : 'User created.'
+      summary: 'Éxito',
+      detail: this.isEditing() ? 'Usuario actualizado correctamente.' : 'Usuario creado correctamente.'
     });
     if (this.isEditing()) {
       this.saving.set(false);
@@ -206,7 +201,7 @@ export class AddEditUser implements OnInit {
   private onError(err: any) {
     const detalle = err.error?.errors
       ? Object.values(err.error.errors).flat().join(' ')
-      : err.error?.detail ?? 'An unexpected error occurred.';
+      : err.error?.detail ?? 'Ocurrió un error inesperado.';
     this.errorMessage.set(detalle);
     this.saving.set(false);
   }
@@ -219,7 +214,7 @@ export class AddEditUser implements OnInit {
   }
 
   onPhotoError() {
-    this.errorMessage.set('The image does not meet the requirements (max 2MB, JPG/PNG/WEBP).');
+    this.errorMessage.set('La imagen no cumple con los requisitos (máx 2MB, JPG/PNG/WEBP).');
   }
 
   onFileRemoved() {
@@ -250,11 +245,11 @@ export class AddEditUser implements OnInit {
 
   confirmDelete() {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete this user? This action cannot be undone.`,
-      header: 'Confirm deletion',
+      message: `¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.`,
+      header: 'Confirmar eliminación',
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Yes, delete',
-      rejectLabel: 'Cancel',
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'Cancelar',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => this.delete()
     });
@@ -264,11 +259,11 @@ export class AddEditUser implements OnInit {
     this.saving.set(true);
     this.userService.delete(this.userId!).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted.' });
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario eliminado correctamente.' });
         setTimeout(() => this.router.navigate(['/usuarios']), 1000);
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not delete the user.' });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el usuario.' });
         this.saving.set(false);
       }
     });
@@ -276,26 +271,27 @@ export class AddEditUser implements OnInit {
 
   toggleStatus(activate: boolean) {
     const newStatus = activate;
-    const actionText = activate ? 'reactivate' : 'deactivate';
+    const actionText = activate ? 'reactivar' : 'desactivar';
+    const messageText = activate ? 'reactivado' : 'desactivado';
 
     this.confirmationService.confirm({
-      message: `Are you sure you want to ${actionText} this user?`,
-      header: 'Confirm status change',
+      message: `¿Está seguro de que desea ${actionText} a este usuario?`,
+      header: 'Confirmar cambio de estado',
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Yes',
-      rejectLabel: 'Cancel',
+      acceptLabel: 'Sí',
+      rejectLabel: 'Cancelar',
       acceptButtonStyleClass: activate ? 'p-button-success' : 'p-button-warning',
       accept: () => {
         this.saving.set(true);
         this.userService.updateUserStatus(this.userId!, newStatus).subscribe({
           next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: `User ${actionText}d successfully.` });
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Usuario ${messageText} correctamente.` });
             this.isActiveUser.set(newStatus);
             this.form.patchValue({ isActive: newStatus });
             this.saving.set(false);
           },
           error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: `Could not ${actionText} the user.` });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: `No se pudo ${actionText} al usuario.` });
             this.saving.set(false);
           }
         });
@@ -304,58 +300,96 @@ export class AddEditUser implements OnInit {
   }
 
   showSedeDialog() {
-    this.loadAvailableBranches();
-    this.displaySedeDialog.set(true);
+    this.loadAvailableBranchesAndInit();
   }
 
-  loadAvailableBranches() {
+  loadAvailableBranchesAndInit() {
     this.branchService.getAvailableBranches().subscribe({
-      next: (branches) => this.availableBranches.set(branches),
-      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not load available branches.' })
+      next: (branches) => {
+        this.availableBranches.set(branches);
+
+        // Pre-select branches that are currently linked
+        const linkedIds = this.linkedBranches().map(b => b.id);
+        const preSelected = branches.filter(b => linkedIds.includes(b.id));
+
+        // If some linked branches are not in the "available" list, append them to availableBranches
+        // and pre-select them so they can be deselected if wanted
+        const missingBranches = this.linkedBranches().filter(lb => !branches.some(ab => ab.id === lb.id));
+        if (missingBranches.length > 0) {
+          this.availableBranches.set([...branches, ...missingBranches]);
+          this.selectedBranches.set([...preSelected, ...missingBranches]);
+        } else {
+          this.selectedBranches.set(preSelected);
+        }
+
+        this.displaySedeDialog.set(true);
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las sedes disponibles.' })
     });
   }
 
-  linkBranch() {
-    const branchToLink = this.selectedBranch();
-    if (!branchToLink || !this.userId) return;
-
+  linkBranches() {
+    if (!this.userId) return;
     this.saving.set(true);
-    // Asumimos que tienes un método `linkBranch` en tu `UserService`
-    this.userService.assignBranchToUser(this.userId, branchToLink.id).subscribe({
+
+    const branchIds = this.selectedBranches().map(b => b.id);
+
+    this.userService.assignBranchesToUser(this.userId, branchIds).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Sucursal '${branchToLink.name}' vinculada.` });
-        this.linkedBranchName.set(branchToLink.name);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Sedes vinculadas correctamente.'
+        });
+        this.linkedBranches.set([...this.selectedBranches()]);
         this.displaySedeDialog.set(false);
-        this.selectedBranch.set(null);
         this.saving.set(false);
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo vincular la sucursal.' });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron vincular las sedes.'
+        });
         this.saving.set(false);
       }
     });
   }
 
-  unlinkBranch() {
+  unlinkBranch(branchId: string) {
     if (!this.userId) return;
 
+    const branchToUnlink = this.linkedBranches().find(b => b.id === branchId);
+    const branchName = branchToUnlink ? branchToUnlink.name : '';
+
     this.confirmationService.confirm({
-      message: `¿Está seguro de que desea desvincular la sucursal de este usuario?`,
+      message: `¿Está seguro de que desea desvincular la sucursal '${branchName}' de este usuario?`,
       header: 'Confirmar desvinculación',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, desvincular',
       rejectLabel: 'Cancelar',
       accept: () => {
         this.saving.set(true);
-        // Asumimos que tienes un método `unlinkBranch` en tu `UserService`
-        this.userService.assignBranchToUser(this.userId!, null).subscribe({
+        const remainingBranchIds = this.linkedBranches()
+          .filter(b => b.id !== branchId)
+          .map(b => b.id);
+
+        this.userService.assignBranchesToUser(this.userId!, remainingBranchIds).subscribe({
           next: () => {
-            this.messageService.add({ severity: 'info', summary: 'Información', detail: 'Sucursal desvinculada.' });
-            this.linkedBranchName.set(null);
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Información',
+              detail: `Sucursal '${branchName}' desvinculada.`
+            });
+            this.linkedBranches.update(branches => branches.filter(b => b.id !== branchId));
             this.saving.set(false);
           },
           error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo desvincular la sucursal.' });
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'No se pudo desvincular la sucursal.'
+            });
             this.saving.set(false);
           }
         });

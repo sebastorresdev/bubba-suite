@@ -17,6 +17,8 @@ import { MessageModule } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProblemDetails } from '../../../shared/models/problem-details.model';
 
@@ -29,13 +31,14 @@ import { ProblemDetails } from '../../../shared/models/problem-details.model';
     ButtonModule,
     CardModule,
     InputTextModule,
-    ToastModule,
     ConfirmDialogModule,
     SkeletonModule,
     MessageModule, // Mantén este módulo si lo usas en otro lugar
     MenuModule,
+    IconFieldModule,
+    InputIconModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './add-edit-branch.html',
 })
 export class AddEditBranch implements OnInit {
@@ -77,6 +80,7 @@ export class AddEditBranch implements OnInit {
 
   // Formulario Reactivo
   form: FormGroup = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
     name: ['', [Validators.required, Validators.minLength(3)]],
     address: [''],
     isActive: [true],
@@ -128,11 +132,7 @@ export class AddEditBranch implements OnInit {
           });
           this.saving.set(false);
         },
-        error: (err) => {
-          const detail = err.error?.message || 'Ocurrió un error inesperado.';
-          this.errorMessage.set(detail);
-          this.saving.set(false);
-        },
+        error: (err: HttpErrorResponse) => this.onError(err),
       });
     } else {
       // --- Lógica de Creación ---
@@ -149,11 +149,7 @@ export class AddEditBranch implements OnInit {
           // No es necesario `saving.set(false)` aquí porque el componente será destruido.
           this.router.navigate(['/sucursales/editar', response.id]);
         },
-        error: (err) => {
-          const detail = err.error?.message || 'Ocurrió un error inesperado.';
-          this.errorMessage.set(detail);
-          this.saving.set(false);
-        },
+        error: (err: HttpErrorResponse) => this.onError(err),
       });
     }
   }
@@ -245,5 +241,13 @@ export class AddEditBranch implements OnInit {
         });
       },
     });
+  }
+
+  private onError(err: HttpErrorResponse): void {
+    const detailMessage = err.error?.errors
+      ? Object.values(err.error.errors).flat().join(' ')
+      : err.error?.detail ?? 'Ocurrió un error inesperado.';
+    this.errorMessage.set(detailMessage);
+    this.saving.set(false);
   }
 }

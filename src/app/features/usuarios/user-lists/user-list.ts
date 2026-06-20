@@ -62,7 +62,7 @@ export class UserList implements OnInit {
       this.errorMessage.set(null);
       this.userService.getAll().subscribe({
         next: data => { this.users.set(data); this.loading.set(false); },
-        error: () => { this.errorMessage.set('Error loading users.'); this.loading.set(false); }
+        error: () => { this.errorMessage.set('Error al cargar los usuarios.'); this.loading.set(false); }
       });
     }
 
@@ -71,11 +71,11 @@ export class UserList implements OnInit {
 
     confirmDelete(user: UserResponse) {
       this.confirmationService.confirm({
-        message: `Are you sure you want to delete <strong>${user.name}</strong>?`,
-        header: 'Confirm deletion',
+        message: `¿Está seguro de que desea eliminar a <strong>${user.name}</strong>?`,
+        header: 'Confirmar eliminación',
         icon: 'pi pi-exclamation-triangle',
-        acceptLabel: 'Yes, delete',
-        rejectLabel: 'Cancel',
+        acceptLabel: 'Sí, eliminar',
+        rejectLabel: 'Cancelar',
         acceptButtonStyleClass: 'p-button-danger',
         accept: () => this.delete(user)
       });
@@ -84,7 +84,7 @@ export class UserList implements OnInit {
     delete(user: UserResponse) {
       this.userService.delete(user.id).subscribe({
         next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted.' });
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Usuario eliminado.' });
           this.loadUsers();
         },
         error: (err: HttpErrorResponse) => {
@@ -105,11 +105,11 @@ export class UserList implements OnInit {
 
     confirmArchive(user: UserResponse, detail?: string) {
       this.confirmationService.confirm({
-        message: `${detail ?? 'The user has associated records.'} <br/><br/>Do you want to archive them instead?`,
-        header: 'Cannot delete',
+        message: `${detail ?? 'El usuario tiene registros asociados.'} <br/><br/>¿Desea archivarlo en su lugar?`,
+        header: 'No se puede eliminar',
         icon: 'pi pi-info-circle',
-        acceptLabel: 'Archive',
-        rejectLabel: 'Cancel',
+        acceptLabel: 'Archivar',
+        rejectLabel: 'Cancelar',
         accept: () => this.archive(user.id)
       });
     }
@@ -117,10 +117,10 @@ export class UserList implements OnInit {
     archive(id: string) {
       this.userService.archive(id).subscribe({
         next: () => {
-          this.messageService.add({ severity: 'info', summary: 'Archived', detail: 'User successfully archived.' });
+          this.messageService.add({ severity: 'info', summary: 'Archivado', detail: 'Usuario archivado correctamente.' });
           this.loadUsers();
         },
-        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not archive the user.' })
+        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo archivar al usuario.' })
       });
     }
 
@@ -138,6 +138,6 @@ export class UserList implements OnInit {
     }
 
     getStatusLabel(isActive: boolean): string {
-      return isActive ? 'Active' : 'Inactive';
+      return isActive ? 'Activo' : 'Inactivo';
     }
   }

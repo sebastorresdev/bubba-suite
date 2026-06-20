@@ -31,13 +31,12 @@ import { ProblemDetails } from '../../../shared/models/problem-details.model';
     TagModule,
     CardModule,
     SkeletonModule,
-    ToastModule,
     ConfirmDialogModule,
     InputIconModule,
     IconFieldModule,
     InputTextModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './branches-list.html',
 })
 export class BranchesList implements OnInit {

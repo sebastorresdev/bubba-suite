@@ -46,6 +46,30 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/branches/add-edit-branches/add-edit-branch').then(m => m.AddEditBranch)
             },
             {
+                path: 'roles',
+                loadComponent: () => import('./features/roles/role-list/role-list').then(m => m.RoleList)
+            },
+            {
+                path: 'roles/nuevo',
+                loadComponent: () => import('./features/roles/add-edit-role/add-edit-role').then(m => m.AddEditRole)
+            },
+            {
+                path: 'roles/editar/:id',
+                loadComponent: () => import('./features/roles/add-edit-role/add-edit-role').then(m => m.AddEditRole)
+            },
+            {
+                path: 'empleados',
+                loadComponent: () => import('./features/empleados/empleados-list/empleados-list').then(m => m.EmpleadosList)
+            },
+            {
+                path: 'empleados/nuevo',
+                loadComponent: () => import('./features/empleados/add-edit-empleado/add-edit-empleado').then(m => m.AddEditEmpleado)
+            },
+            {
+                path: 'empleados/editar/:id',
+                loadComponent: () => import('./features/empleados/add-edit-empleado/add-edit-empleado').then(m => m.AddEditEmpleado)
+            },
+            {
                 path: '404',
                 loadComponent: () => import('./shared/not-found/not-found').then(m => m.NotFound)
             },

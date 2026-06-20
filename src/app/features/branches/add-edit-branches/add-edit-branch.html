@@ -1,4 +1,3 @@
-<p-toast />
 <p-confirmDialog />
 
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 mx-1 transition-opacity duration-300 ease-out">
@@ -67,6 +66,10 @@
 
       <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
 
+        <h3 class="text-base font-bold text-surface-800 dark:text-surface-200 border-b border-surface-100 dark:border-surface-800 pb-2.5 m-0 mb-4">
+          Datos Generales de la Sucursal
+        </h3>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <!-- Nombre de la Sucursal -->
@@ -74,28 +77,71 @@
             <label for="name" class="text-surface-700 dark:text-surface-300 text-sm font-medium">
               Nombre de la Sucursal <span class="text-red-500">*</span>
             </label>
-            <input pInputText
-                   id="name"
-                   formControlName="name"
-                   placeholder="Ej: Tienda Principal, Almacén Central"
-                   [invalid]="isFieldInvalid('name')" />
+            <p-iconfield>
+              <p-inputicon class="pi pi-building text-surface-400" />
+              <input pInputText
+                     id="name"
+                     formControlName="name"
+                     placeholder="Ej: Tienda Principal, Almacén Central"
+                     class="w-full"
+                     [invalid]="isFieldInvalid('name')" />
+            </p-iconfield>
             @if (isFieldInvalid('name')) {
               <small class="text-red-500 flex items-center gap-1">
                 <i class="pi pi-exclamation-circle text-xs"></i>
-                El nombre es requerido (mín. 3 caracteres).
+                @if (form.get('name')?.errors?.['required']) {
+                  El nombre de la sucursal es obligatorio.
+                }
+                @if (form.get('name')?.errors?.['minlength']) {
+                  El nombre debe tener al menos 3 caracteres.
+                }
+              </small>
+            }
+          </div>
+
+          <!-- Código de la Sucursal -->
+          <div class="flex flex-col gap-2">
+            <label for="code" class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+              Código de la Sucursal <span class="text-red-500">*</span>
+            </label>
+            <p-iconfield>
+              <p-inputicon class="pi pi-hashtag text-surface-400" />
+              <input pInputText
+                     id="code"
+                     formControlName="code"
+                     placeholder="Ej: TI-01, AL-CENTRAL"
+                     class="w-full uppercase"
+                     [invalid]="isFieldInvalid('code')" />
+            </p-iconfield>
+            @if (isFieldInvalid('code')) {
+              <small class="text-red-500 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>
+                @if (form.get('code')?.errors?.['required']) {
+                  El código de la sucursal es obligatorio.
+                }
+                @if (form.get('code')?.errors?.['minlength']) {
+                  El código debe tener al menos 2 caracteres.
+                }
+                @if (form.get('code')?.errors?.['maxlength']) {
+                  El código no debe exceder los 20 caracteres.
+                }
               </small>
             }
           </div>
 
           <!-- Dirección -->
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2 md:col-span-2">
             <label for="address" class="text-surface-700 dark:text-surface-300 text-sm font-medium">
               Dirección
             </label>
-            <input pInputText
-                   id="address"
-                   formControlName="address"
-                   placeholder="Ej: Av. Principal 123, Ciudad" />
+            <p-iconfield>
+              <p-inputicon class="pi pi-map-marker text-surface-400" />
+              <input pInputText
+                     id="address"
+                     formControlName="address"
+                     class="w-full"
+                     placeholder="Ej: Av. Principal 123, Ciudad" />
+            </p-iconfield>
           </div>
 
         </div>

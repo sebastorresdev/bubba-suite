@@ -3,13 +3,13 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 mx-1 animate-fade-in">
   <div>
     <h2 class="dark:text-surface-0 text-surface-800 font-extrabold text-2xl m-0 flex items-center gap-2">
-      Users
+      Usuarios
       <span class="text-xs font-semibold px-2 py-0.5 bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full border border-primary-100 dark:border-primary-900/40">
-        {{ totalUsers() }} in total
+        {{ totalUsers() }} en total
       </span>
     </h2>
     <p class="dark:text-surface-400 text-surface-500 text-sm mt-1.5 mb-0">
-      Management of credentials, roles, and system access for personnel.
+      Gestión de credenciales, roles y acceso al sistema para el personal.
     </p>
   </div>
 
@@ -21,7 +21,7 @@
         <i class="pi pi-check-circle text-sm"></i>
       </div>
       <div>
-        <div class="text-[10px] font-bold text-surface-400 uppercase tracking-wider">Active</div>
+        <div class="text-[10px] font-bold text-surface-400 uppercase tracking-wider">Activos</div>
         <div class="text-sm font-extrabold text-surface-800 dark:text-surface-100">{{ activeUsers() }}</div>
       </div>
     </div>
@@ -32,7 +32,7 @@
         <i class="pi pi-ban text-sm "></i>
       </div>
       <div>
-        <div class="text-[10px] font-bold text-surface-400 uppercase tracking-wider">Inactive</div>
+        <div class="text-[10px] font-bold text-surface-400 uppercase tracking-wider">Inactivos</div>
         <div class="text-sm font-extrabold text-surface-800 dark:text-surface-100">{{ inactiveUsers() }}</div>
       </div>
     </div>
@@ -64,7 +64,7 @@
             pSize="small"
             [(ngModel)]="globalSearch"
             (input)="dv.filter(globalSearch, 'contains')"
-            placeholder="Search by name, email or role..."
+            placeholder="Buscar por nombre, correo o rol..."
           />
         </p-iconfield>
 
@@ -81,7 +81,7 @@
           <p-button
             severity="secondary"
             size="small"
-            label="Filters"
+            label="Filtros"
             icon="pi pi-filter"
             [outlined]="true"
           />
@@ -91,7 +91,7 @@
 
           <!-- Exportar -->
           <p-button
-            label="Export"
+            label="Exportar"
             size="small"
             icon="pi pi-upload"
             [outlined]="true"
@@ -100,7 +100,7 @@
 
           <!-- Nuevo Usuario -->
           <p-button
-            label="New"
+            label="Nuevo"
             size="small"
             icon="pi pi-plus"
             (onClick)="goToCreate()"
@@ -119,14 +119,14 @@
         <ng-template #header>
           <tr>
             <th class="w-16 text-center"></th>
-            <th pResizableColumn pSortableColumn="name">Name <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="name">Nombre <p-sortIcon field="name" /></th>
             <th pResizableColumn pSortableColumn="username">
-              Username <p-sortIcon field="username" />
+              Usuario <p-sortIcon field="username" />
             </th>
-            <th pResizableColumn pSortableColumn="email">Email <p-sortIcon field="email" /></th>
-            <th pResizableColumn pSortableColumn="roleName">Role <p-sortIcon field="roleName" /></th>
-            <th pResizableColumn pSortableColumn="isActive">Status <p-sortIcon field="isActive" /></th>
-            <th class="text-center" style="width: 120px">Actions</th>
+            <th pResizableColumn pSortableColumn="email">Correo <p-sortIcon field="email" /></th>
+            <th pResizableColumn pSortableColumn="roleName">Rol <p-sortIcon field="roleName" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Estado <p-sortIcon field="isActive" /></th>
+            <th class="text-center" style="width: 120px">Acciones</th>
           </tr>
         </ng-template>
 
@@ -150,7 +150,7 @@
               @if (user.roleName) {
                 <p-tag [value]="user.roleName" severity="info" />
               } @else {
-                <span class="text-sm text-surface-400">No role</span>
+                <span class="text-sm text-surface-400">Sin rol</span>
               }
             </td>
             <td>
@@ -163,7 +163,7 @@
                   [rounded]="true"
                   [text]="true"
                   severity="info"
-                  pTooltip="Edit"
+                  pTooltip="Editar"
                   (onClick)="goToEdit(user.id)"
                 />
                 <p-button
@@ -171,7 +171,7 @@
                   [rounded]="true"
                   [text]="true"
                   severity="danger"
-                  pTooltip="Delete"
+                  pTooltip="Eliminar"
                   (onClick)="confirmDelete(user)"
                 />
               </div>
@@ -184,7 +184,7 @@
             <td colspan="7" class="text-center py-6">
               <div class="flex flex-col items-center gap-2 text-surface-400">
                 <i class="pi pi-users text-4xl"></i>
-                <span>No users found.</span>
+                <span>No se encontraron usuarios.</span>
               </div>
             </td>
           </tr>
@@ -197,7 +197,7 @@
         @if (items.length === 0) {
           <div class="flex flex-col col-span-12 text-center py-10 text-surface-400">
             <i class="pi pi-users text-4xl block mb-2"></i>
-            <span>No users found in search.</span>
+            <span>No se encontraron usuarios en la búsqueda.</span>
           </div>
         }
 
@@ -269,7 +269,7 @@
               class="flex gap-2 w-full mt-5 pt-4 border-t border-surface-100 dark:border-surface-800"
             >
               <p-button
-                label="Edit"
+                label="Editar"
                 icon="pi pi-pencil"
                 size="small"
                 [outlined]="true"

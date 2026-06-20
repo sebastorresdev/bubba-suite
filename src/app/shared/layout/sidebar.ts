@@ -2,21 +2,7 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-
-interface SubMenuItem {
-  label: string;
-  routerLink: string;
-}
-
-interface MenuGroup {
-  title: string;
-  items: {
-    label: string;
-    icon: string;
-    routerLink?: string;
-    subItems?: SubMenuItem[];
-  }[];
-}
+import { NAVIGATION_CONFIG } from '../../core/config/navigation.config';
 
 @Component({
   selector: 'app-sidebar',
@@ -131,39 +117,7 @@ export class Sidebar implements OnInit {
     return item.subItems.some((sub: any) => this.isRouteActive(sub.routerLink));
   }
 
-  // Array robusto con todos tus módulos de prueba completos, limpio de badges
-  menuConfig: MenuGroup[] = [
-    {
-      title: 'Principal',
-      items: [
-        { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/home' },
-        { label: 'Indicadores KPI', icon: 'pi pi-chart-bar', routerLink: '/kpis' }
-      ]
-    },
-    {
-      title: 'Administración',
-      items: [
-        {
-          label: 'Usuarios',
-          icon: 'pi pi-users',
-          subItems: [
-            { label: 'Listar Usuarios', routerLink: '/usuarios' },
-            { label: 'Asignar Permisos', routerLink: '/usuarios/permisos' },
-            { label: 'Historial de Accesos', routerLink: '/usuarios/logs' }
-          ]
-        },
-        { label: 'Roles y Permisos', icon: 'pi pi-shield', routerLink: '/roles' },
-        { label: 'Sucursales', icon: 'pi pi-building', routerLink: '/sucursales' }
-      ]
-    },
-    {
-      title: 'Configuración',
-      items: [
-        { label: 'Ajustes Generales', icon: 'pi pi-sliders-h', routerLink: '/configuracion' },
-        { label: 'Auditoría del Sistema', icon: 'pi pi-eye', routerLink: '/auditoria' }
-      ]
-    }
-  ];
+  menuConfig = NAVIGATION_CONFIG;
 
   toggleSubMenu(menu: string) {
     this.activeSubMenu.update(current => current === menu ? null : menu);

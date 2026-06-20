@@ -1,0 +1,274 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="max-w-4xl mx-auto pb-8 animate-fade-in">
+  
+  <!-- Encabezado de la Página -->
+  <div class="flex items-center justify-between gap-4 mb-6 mx-1">
+    <div class="flex items-center gap-3">
+      <p-button 
+        icon="pi pi-arrow-left" 
+        severity="secondary" 
+        [outlined]="true" 
+        (onClick)="cancel()"
+        pTooltip="Volver al listado"
+        tooltipPosition="bottom"
+      />
+      <div>
+        <h2 class="dark:text-surface-0 text-surface-800 font-extrabold text-xl m-0">
+          {{ isEditing() ? 'Editar Empleado' : 'Registrar Empleado' }}
+        </h2>
+        <p class="dark:text-surface-400 text-surface-500 text-xs mt-1 mb-0">
+          {{ isEditing() ? 'Modifica los datos personales, laborales y credenciales del empleado.' : 'Ingresa la información básica y de asistencia para dar de alta un nuevo empleado.' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Menú de Acciones Rápidas (Solo en Edición) -->
+    @if (isEditing() && !loading()) {
+      <div class="relative">
+        <p-button 
+          icon="pi pi-ellipsis-v" 
+          severity="secondary" 
+          [outlined]="true"
+          (onClick)="menu.toggle($event)"
+        />
+        <p-menu #menu [model]="empleadoActions()" [popup]="true" />
+      </div>
+    }
+  </div>
+
+  <!-- Contenedor del Formulario / Skeletons de Carga -->
+  <div class="relative">
+    
+    <!-- Alerta de Empleado Inactivo -->
+    @if (isEditing() && !isActiveEmpleado()) {
+      <div class="absolute inset-0 bg-surface-0/60 dark:bg-surface-900/60 z-10 rounded-xl overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-0">
+          <div class="absolute transform -rotate-45 bg-amber-500 text-white font-bold uppercase text-[10px] tracking-wider py-1.5 px-8 text-center -translate-x-8 top-5">
+            De Baja / Inactivo
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (loading()) {
+      <p-card>
+        <div class="flex flex-col gap-5 p-4">
+          <p-skeleton width="40%" height="1.5rem" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p-skeleton height="2.5rem" />
+            <p-skeleton height="2.5rem" />
+            <p-skeleton height="2.5rem" />
+            <p-skeleton height="2.5rem" />
+          </div>
+        </div>
+      </p-card>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
+        
+        <!-- CARD 1: Datos Personales -->
+        <p-card>
+          <h3 class="text-sm font-extrabold text-surface-800 dark:text-surface-200 border-b border-surface-100 dark:border-surface-800 pb-2.5 m-0 mb-4 flex items-center gap-2">
+            <i class="pi pi-user text-primary-500"></i>
+            Información Personal
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Nombres -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Nombres <span class="text-red-500">*</span>
+              </label>
+              <input 
+                pInputText 
+                formControlName="firstName" 
+                placeholder="Ej. Juan Carlos" 
+                [invalid]="isFieldInvalid('firstName')"
+              />
+              @if (isFieldInvalid('firstName')) {
+                <small class="text-red-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle text-xs"></i>
+                  Los nombres son requeridos.
+                </small>
+              }
+            </div>
+
+            <!-- Apellidos -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Apellidos <span class="text-red-500">*</span>
+              </label>
+              <input 
+                pInputText 
+                formControlName="lastName" 
+                placeholder="Ej. Pérez Torres" 
+                [invalid]="isFieldInvalid('lastName')"
+              />
+              @if (isFieldInvalid('lastName')) {
+                <small class="text-red-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle text-xs"></i>
+                  Los apellidos son requeridos.
+                </small>
+              }
+            </div>
+
+            <!-- Tipo y Número de Documento -->
+            <div class="flex flex-col gap-2 md:col-span-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Identificación / Documento <span class="text-red-500">*</span>
+              </label>
+              <div class="grid grid-cols-3 gap-3">
+                <div class="col-span-1">
+                  <p-select 
+                    formControlName="documentType" 
+                    [options]="documentTypes" 
+                    optionLabel="label" 
+                    optionValue="value" 
+                    placeholder="Tipo"
+                    [invalid]="isFieldInvalid('documentType')"
+                    styleClass="w-full text-sm"
+                  />
+                </div>
+                <div class="col-span-2">
+                  <input 
+                    pInputText 
+                    formControlName="documentNumber" 
+                    placeholder="Número de documento (ej. 71234567)" 
+                    [invalid]="isFieldInvalid('documentNumber')"
+                    class="w-full"
+                  />
+                </div>
+              </div>
+              @if (isFieldInvalid('documentNumber') || isFieldInvalid('documentType')) {
+                <small class="text-red-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle text-xs"></i>
+                  Tipo y número de documento (entre 6 y 15 letras o números) son requeridos.
+                </small>
+              }
+            </div>
+
+            <!-- Correo Electrónico -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Correo Electrónico
+              </label>
+              <input 
+                pInputText 
+                formControlName="email" 
+                placeholder="Ej. juan.perez@bubba.com" 
+                [invalid]="isFieldInvalid('email')"
+              />
+              @if (isFieldInvalid('email')) {
+                <small class="text-red-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle text-xs"></i>
+                  Ingrese un correo institucional válido.
+                </small>
+              }
+            </div>
+
+            <!-- Celular -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Teléfono o Celular
+              </label>
+              <input 
+                pInputText 
+                formControlName="phone" 
+                placeholder="Ej. +51 987654321" 
+              />
+            </div>
+          </div>
+        </p-card>
+
+        <!-- CARD 2: Datos Laborales -->
+        <p-card>
+          <h3 class="text-sm font-extrabold text-surface-800 dark:text-surface-200 border-b border-surface-100 dark:border-surface-800 pb-2.5 m-0 mb-4 flex items-center gap-2">
+            <i class="pi pi-briefcase text-primary-500"></i>
+            Información Laboral
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Código Empleado -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Código de Empleado <span class="text-red-500">*</span>
+              </label>
+              <input 
+                pInputText 
+                formControlName="code" 
+                placeholder="Ej. EMP-101" 
+                [invalid]="isFieldInvalid('code')"
+              />
+              @if (isFieldInvalid('code')) {
+                <small class="text-red-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle text-xs"></i>
+                  Formato requerido: EMP- seguido de números (ej. EMP-101).
+                </small>
+              }
+            </div>
+
+            <!-- Cargo / Puesto -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Puesto o Cargo
+              </label>
+              <input 
+                pInputText 
+                formControlName="position" 
+                placeholder="Ej. Cajera Principal, Vendedor" 
+              />
+            </div>
+
+            <!-- Departamento -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Área o Departamento
+              </label>
+              <input 
+                pInputText 
+                formControlName="department" 
+                placeholder="Ej. Ventas, Logística, Operaciones" 
+              />
+            </div>
+
+            <!-- Fecha de Ingreso -->
+            <div class="flex flex-col gap-2">
+              <label class="text-surface-700 dark:text-surface-300 text-sm font-medium">
+                Fecha de Contratación / Ingreso <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="date"
+                pInputText 
+                formControlName="hireDate" 
+                [invalid]="isFieldInvalid('hireDate')"
+              />
+              @if (isFieldInvalid('hireDate')) {
+                <small class="text-red-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle text-xs"></i>
+                  La fecha de ingreso es requerida.
+                </small>
+              }
+            </div>
+          </div>
+        </p-card>
+
+        <!-- Botones de Acción -->
+        <div class="flex items-center justify-end gap-3 mt-2 mx-1">
+          <p-button 
+            label="Cancelar" 
+            severity="secondary" 
+            [outlined]="true" 
+            (onClick)="cancel()"
+            [disabled]="saving()"
+          />
+          <p-button 
+            type="submit" 
+            [label]="isEditing() ? 'Guardar Cambios' : 'Registrar Empleado'" 
+            [loading]="saving()"
+            icon="pi pi-save"
+          />
+        </div>
+
+      </form>
+    }
+  </div>
+</div>

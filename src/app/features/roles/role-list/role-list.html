@@ -1,0 +1,116 @@
+<p-confirmDialog />
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 mx-1 animate-fade-in">
+  <div>
+    <h2 class="dark:text-surface-0 text-surface-800 font-extrabold text-2xl m-0 leading-tight">
+      Roles y Permisos
+    </h2>
+    <p class="dark:text-surface-400 text-surface-500 text-sm mt-1 mb-0 leading-normal">
+      Administra los roles de acceso y privilegios de los usuarios en la plataforma.
+    </p>
+  </div>
+</div>
+
+<p-card>
+  @if (errorMessage()) {
+    <p-message severity="warn" styleClass="w-full mb-4">{{ errorMessage() }}</p-message>
+  }
+
+  <p-table
+    [value]="roles()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    class="p-datatable-sm"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [tableStyle]="{ 'min-width': '40rem' }"
+    [globalFilterFields]="['name']"
+    #dt
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-1 px-0.5">
+        <!-- Búsqueda -->
+        <p-iconfield class="w-full sm:w-auto">
+          <p-inputicon class="pi pi-search text-surface-400" />
+          <input
+            pInputText
+            type="text"
+            class="w-full sm:w-80"
+            pSize="small"
+            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+            placeholder="Buscar por nombre..."
+          />
+        </p-iconfield>
+
+        <!-- Acciones -->
+        <div class="flex items-center gap-2">
+          <p-button label="Nuevo Rol" size="small" icon="pi pi-plus" (onClick)="goToCreate()" />
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="width: 80%">Nombre del Rol <p-sortIcon field="name" /></th>
+        <th style="width: 20%" class="text-center">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-role>
+      <tr>
+        <td>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-primary"></span>
+            <span class="font-semibold text-surface-800 dark:text-surface-100">{{ role.name }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex justify-center gap-2">
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              [rounded]="true"
+              pTooltip="Editar"
+              tooltipPosition="top"
+              (onClick)="goToEdit(role.id)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              [rounded]="true"
+              severity="danger"
+              pTooltip="Eliminar"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(role)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      @for (_ of [1, 2, 3, 4]; track $index) {
+        <tr>
+          <td><p-skeleton height="1.5rem" /></td>
+          <td>
+            <div class="flex justify-center gap-2">
+              <p-skeleton shape="circle" size="2rem" />
+              <p-skeleton shape="circle" size="2rem" />
+            </div>
+          </td>
+        </tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="2" class="text-center py-10">
+          <div class="flex flex-col items-center gap-2 text-surface-400 dark:text-surface-600">
+            <i class="pi pi-shield text-4xl"></i>
+            <span class="text-sm font-medium">No se encontraron roles creados.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

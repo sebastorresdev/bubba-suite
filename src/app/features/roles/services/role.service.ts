@@ -6,7 +6,8 @@ import {
   RoleDetailResponse,
   CreateRoleRequest,
   UpdateRoleRequest,
-  AssignRolePermissionsRequest
+  AssignRolePermissionsRequest,
+  PermissionResponse
 } from '../models/role.models';
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +36,10 @@ export class RoleService {
   }
 
   assignPermissions(id: string, data: AssignRolePermissionsRequest) {
-    return this.http.put(`${this.base}/${id}/permisos`, data);
+    return this.http.put(`${this.base}/${id}/permissions`, data);
+  }
+
+  getPermissions() {
+    return this.http.get<PermissionResponse[]>(`${environment.apiUrl}/roles/permissions`);
   }
 }

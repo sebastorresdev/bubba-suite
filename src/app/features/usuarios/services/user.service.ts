@@ -40,7 +40,7 @@ export class UserService {
     return this.http.patch(`${this.base}/${id}/status`, { isActive });
   }
 
-  assignBranchToUser(userId: string, branchId: string | null) {
-    return this.http.patch(`${this.base}/${userId}/branch`, { branchId });
+  assignBranchesToUser(userId: string, branchIds: string[]) {
+    return this.http.put(`${this.base}/${userId}/branches`, { branchIds });
   }
 }
